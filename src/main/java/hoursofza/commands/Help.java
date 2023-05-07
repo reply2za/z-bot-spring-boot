@@ -1,14 +1,13 @@
 package hoursofza.commands;
 
 
+import hoursofza.utils.MessageEventLocal;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
-import hoursofza.utils.MessageEventLocal;
 
 import java.awt.Color;
-import java.util.Arrays;
 import java.util.List;
 
 public class Help implements CommandHandler {
@@ -26,6 +25,6 @@ public class Help implements CommandHandler {
 
     @Override
     public List<String> getNames() {
-        return Arrays.asList("help", "h");
+        return List.of("help", "h");
     }
 }

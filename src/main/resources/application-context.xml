@@ -5,11 +5,13 @@
                            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <bean id="helpHandler" class="hoursofza.commands.Help" />
+    <bean id="pingHandler" class="hoursofza.commands.Ping" />
 
     <bean id="messageEventListener" class="hoursofza.listeners.MessageReceivedListener">
         <constructor-arg>
             <set>
                 <ref bean="helpHandler"/>
+                <ref bean="pingHandler"/>
             </set>
         </constructor-arg>
     </bean>
