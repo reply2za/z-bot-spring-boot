@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashMap;
-import java.util.Set;
 
 @Slf4j
 public class MessageReceivedListener extends ListenerAdapter {
@@ -23,8 +22,8 @@ public class MessageReceivedListener extends ListenerAdapter {
     @Autowired
     CommandService commandService;
 
-    public MessageReceivedListener(Set<CommandHandler> commandHandlers, @Value("${default.prefix}") String messagePrefix) {
-    this.messagePrefix = messagePrefix;
+    public MessageReceivedListener(@Value("${default.prefix}") String messagePrefix) {
+        this.messagePrefix = messagePrefix;
     }
 
     @Override
@@ -37,7 +36,7 @@ public class MessageReceivedListener extends ListenerAdapter {
         statement = statement.substring(1);
         if (statement.isBlank()) return;
         MessageEventLocal messageEvent = new MessageEventLocal(message, statement, new HashMap<>());
-        CommandHandler commandHandler = commandService.getCommand(statement);
+        CommandHandler commandHandler = commandService.getCommand(messageEvent);
         if (commandHandler != null) {
             log.info("executing {}", commandHandler.getClass().getName());
             commandHandler.execute(messageEvent);

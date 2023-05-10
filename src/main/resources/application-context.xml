@@ -4,14 +4,22 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="helpHandler" class="hoursofza.commands.Help" />
-    <bean id="pingHandler" class="hoursofza.commands.Ping" />
+    <bean id="helpHandler" class="hoursofza.commands.client.Help" />
+    <bean id="pingHandler" class="hoursofza.commands.client.Ping" />
+    <bean id="versionHandler" class="hoursofza.commands.admin.Version" />
 
-    <bean id="messageEventListener" class="hoursofza.listeners.MessageReceivedListener">
+    <bean id="messageEventListener" class="hoursofza.listeners.MessageReceivedListener" />
+
+    <bean id="commandService" class="hoursofza.services.CommandService">
         <constructor-arg>
             <set>
                 <ref bean="helpHandler"/>
                 <ref bean="pingHandler"/>
+            </set>
+        </constructor-arg>
+        <constructor-arg>
+            <set>
+                <ref bean="versionHandler"/>
             </set>
         </constructor-arg>
     </bean>

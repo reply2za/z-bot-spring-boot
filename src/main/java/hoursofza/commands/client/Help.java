@@ -1,6 +1,7 @@
-package hoursofza.commands;
+package hoursofza.commands.client;
 
 
+import hoursofza.commands.CommandHandler;
 import hoursofza.utils.MessageEventLocal;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;

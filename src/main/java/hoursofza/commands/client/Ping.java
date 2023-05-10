@@ -1,10 +1,11 @@
-package hoursofza.commands;
+package hoursofza.commands.client;
 
+import hoursofza.commands.CommandHandler;
 import hoursofza.utils.MessageEventLocal;
 
 import java.util.List;
 
-public class Ping implements CommandHandler{
+public class Ping implements CommandHandler {
 
     @Override
     public void execute(MessageEventLocal event) {
