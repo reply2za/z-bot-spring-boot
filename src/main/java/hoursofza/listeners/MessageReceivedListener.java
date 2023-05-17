@@ -1,6 +1,6 @@
 package hoursofza.listeners;
 
-import hoursofza.commands.CommandHandler;
+import hoursofza.commands.interfaces.CommandHandler;
 import hoursofza.services.CommandService;
 import hoursofza.services.ProcessManagerService;
 import hoursofza.utils.MessageEventLocal;

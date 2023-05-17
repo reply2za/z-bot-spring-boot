@@ -1,6 +1,8 @@
 package hoursofza.services;
 
-import hoursofza.commands.CommandHandler;
+import hoursofza.commands.interfaces.AdminCommandHandler;
+import hoursofza.commands.interfaces.ClientCommandHandler;
+import hoursofza.commands.interfaces.CommandHandler;
 import hoursofza.utils.MessageEventLocal;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -15,22 +17,18 @@ import java.util.Set;
 
 @Service
 public class CommandService {
-    private final Map<String, CommandHandler> clientCommands = new HashMap<>();
-    private final Map<String, CommandHandler> adminCommands = new HashMap<>();
+    private final Map<String, ClientCommandHandler> clientCommands = new HashMap<>();
+    private final Map<String, AdminCommandHandler> adminCommands = new HashMap<>();
     private final Set<String> admins;
 
-    public CommandService(Set<CommandHandler> clientCommandClasses, Set<CommandHandler> adminCommandClasses, @Value("${owners}") String admins) {
+    public CommandService(Set<ClientCommandHandler> clientCommandClasses, Set<AdminCommandHandler> adminCommandClasses, @Value("${owners}") String admins) {
         this.loadSpecificCommands(clientCommandClasses, this.clientCommands);
         this.loadSpecificCommands(adminCommandClasses, this.adminCommands);
         this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
     }
 
-    private void loadSpecificCommands(Iterable<CommandHandler> commandClasses, Map<String, CommandHandler> commands) {
-        commandClasses.forEach(commandHandler -> {
-            commandHandler.getNames().forEach(alias -> {
-                commands.put(alias, commandHandler);
-            });
-        });
+    private <T extends CommandHandler> void loadSpecificCommands(Iterable<T> commandClasses, Map<String, T> commands) {
+        commandClasses.forEach(commandHandler -> commandHandler.getNames().forEach(alias -> commands.put(alias, commandHandler)));
     }
 
     @Nullable

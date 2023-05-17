@@ -1,17 +1,19 @@
 package hoursofza.commands.client;
 
 
-import hoursofza.commands.CommandHandler;
+import hoursofza.commands.interfaces.ClientCommandHandler;
 import hoursofza.utils.MessageEventLocal;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.springframework.stereotype.Component;
 
 import java.awt.Color;
 import java.util.List;
 
-public class Help implements CommandHandler {
+@Component
+public class Help implements ClientCommandHandler {
 
     @Override
     public void execute(MessageEventLocal messageEvent) {

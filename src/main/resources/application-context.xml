@@ -4,23 +4,4 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="helpHandler" class="hoursofza.commands.client.Help" />
-    <bean id="pingHandler" class="hoursofza.commands.client.Ping" />
-    <bean id="versionHandler" class="hoursofza.commands.admin.Version" />
-
-    <bean id="commandService" class="hoursofza.services.CommandService">
-        <constructor-arg>
-<!--            Client Commands -->
-            <set>
-                <ref bean="helpHandler"/>
-                <ref bean="pingHandler"/>
-            </set>
-        </constructor-arg>
-        <constructor-arg>
-<!--            Admin Commands -->
-            <set>
-                <ref bean="versionHandler"/>
-            </set>
-        </constructor-arg>
-    </bean>
 </beans>

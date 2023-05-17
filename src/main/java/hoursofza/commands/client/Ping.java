@@ -1,11 +1,13 @@
 package hoursofza.commands.client;
 
-import hoursofza.commands.CommandHandler;
+import hoursofza.commands.interfaces.ClientCommandHandler;
 import hoursofza.utils.MessageEventLocal;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-public class Ping implements CommandHandler {
+@Component
+public class Ping implements ClientCommandHandler {
 
     @Override
     public void execute(MessageEventLocal event) {

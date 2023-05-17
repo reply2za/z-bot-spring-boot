@@ -1,4 +1,4 @@
-package hoursofza.commands;
+package hoursofza.commands.interfaces;
 
 import hoursofza.utils.MessageEventLocal;
 

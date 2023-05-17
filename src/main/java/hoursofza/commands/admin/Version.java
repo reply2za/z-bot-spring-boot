@@ -1,16 +1,18 @@
 package hoursofza.commands.admin;
 
 
-import hoursofza.commands.CommandHandler;
+import hoursofza.commands.interfaces.AdminCommandHandler;
 import hoursofza.utils.MessageEventLocal;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.springframework.stereotype.Component;
 
 import java.awt.Color;
 import java.util.List;
 
-public class Version implements CommandHandler {
+@Component
+public class Version implements AdminCommandHandler {
 
     @Override
     public void execute(MessageEventLocal messageEvent) {
