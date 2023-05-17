@@ -1,37 +1,34 @@
 package hoursofza.services;
 
-import hoursofza.config.DiscordBotConfig;
+import hoursofza.config.AppConfig;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.hooks.EventListener;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 
 @Service
+@Slf4j
 public class StartupService {
-    private final DiscordBotConfig config;
-    List<EventListener> eventListeners;
-    private static final Logger LOGGER = LoggerFactory.getLogger(StartupService.class);
+    private final AppConfig appConfig;
+    List<ListenerAdapter> eventListeners;
 
-    public StartupService(DiscordBotConfig config, List<EventListener> listeners) {
-        this.config = config;
+    public StartupService(AppConfig appConfig, List<ListenerAdapter> listeners) {
+        this.appConfig = appConfig;
         this.eventListeners = listeners;
     }
 
     @PostConstruct
     public void init() {
-        LOGGER.info("Initializing Discord bot");
-        JDABuilder.createDefault(config.getToken())
+        log.info("Initializing Discord bot");
+        JDABuilder.createDefault(this.appConfig.getToken())
                 .addEventListeners(this.eventListeners.toArray())
-                .setActivity(Activity.playing("Type !hello"))
                 .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
                 .build();
-        LOGGER.info("Discord bot initialized");
+        log.info("Mode: " + (this.appConfig.isDevMode() ? "Development" : "Production"));
     }
 }

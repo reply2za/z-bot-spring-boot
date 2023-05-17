@@ -19,13 +19,13 @@ public class CommandService {
     private final Map<String, CommandHandler> adminCommands = new HashMap<>();
     private final Set<String> admins;
 
-    public CommandService(Set<CommandHandler> clientCommandClasses, Set<CommandHandler> adminCommandClasses, @Value("${default.owners}") String admins) {
+    public CommandService(Set<CommandHandler> clientCommandClasses, Set<CommandHandler> adminCommandClasses, @Value("${owners}") String admins) {
         this.loadSpecificCommands(clientCommandClasses, this.clientCommands);
         this.loadSpecificCommands(adminCommandClasses, this.adminCommands);
         this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
     }
 
-    private void loadSpecificCommands(Set<CommandHandler> commandClasses, Map<String, CommandHandler> commands) {
+    private void loadSpecificCommands(Iterable<CommandHandler> commandClasses, Map<String, CommandHandler> commands) {
         commandClasses.forEach(commandHandler -> {
             commandHandler.getNames().forEach(alias -> {
                 commands.put(alias, commandHandler);
