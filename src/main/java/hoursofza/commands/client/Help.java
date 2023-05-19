@@ -32,16 +32,21 @@ public class Help implements ClientCommandHandler {
         m.getChannel().sendMessage(MessageCreateData.fromEmbeds(embedBuilder.build())).queue();
         m.addReaction(thumbsUp).queue();
         discordUtils.awaitReaction(
+                m,
+                10,
                 event -> {
-                    if (Objects.isNull(event.getUser()) ) return false;
-                    return event.getUser().getId().equals(m.getAuthor().getId());
+                    if (Objects.nonNull(event.getUser())) {
+                        return event.getUser().getId().equals(m.getAuthor().getId());
+                    }
+                    return false;
                     },
                 event -> {
                     if (Objects.nonNull(event.getUser())) {
                         m.removeReaction(thumbsUp, event.getUser()).queue();
                     }
-
-                }
+                    return true;
+                },
+                x -> m.clearReactions(thumbsUp).queue()
         );
     }
 
