@@ -31,3 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
+
+google-sheets-service-key.json
