@@ -8,7 +8,7 @@ public interface CommandHandler {
     void execute(MessageEventLocal event);
 
     /**
-     * @return A list of command names for the handler.
+     * @return A list of callable names for the command handler.
      */
     List<String> getNames();
 
