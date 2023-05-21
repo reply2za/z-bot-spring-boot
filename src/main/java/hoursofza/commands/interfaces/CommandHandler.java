@@ -12,4 +12,8 @@ public interface CommandHandler {
      */
     List<String> getNames();
 
+    default boolean isMultiProcessCommand() {
+        return false;
+    }
+
 }

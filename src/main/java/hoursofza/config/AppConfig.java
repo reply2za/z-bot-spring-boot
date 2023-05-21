@@ -9,12 +9,14 @@ public class AppConfig {
     private final String token;
     private final boolean devMode;
     private final Prefix prefix;
+    private final String version;
 
     @ConstructorBinding
-    public AppConfig(String token, boolean devMode, Prefix prefix) {
+    public AppConfig(String token, boolean devMode, Prefix prefix, String version) {
         this.token = token;
         this.devMode = devMode;
         this.prefix = prefix;
+        this.version = version;
     }
 
     public String getToken() {
@@ -30,4 +32,8 @@ public class AppConfig {
     }
 
     public record Prefix(String prod, String dev) {}
+
+    public String getVersion() {
+        return version;
+    }
 }

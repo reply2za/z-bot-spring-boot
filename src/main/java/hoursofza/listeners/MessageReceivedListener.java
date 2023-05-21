@@ -3,6 +3,7 @@ package hoursofza.listeners;
 import hoursofza.commands.interfaces.CommandHandler;
 import hoursofza.services.CommandService;
 import hoursofza.services.ProcessManagerService;
+import hoursofza.utils.DiscordUtils;
 import hoursofza.utils.MessageEventLocal;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -18,10 +19,14 @@ public class MessageReceivedListener extends ListenerAdapter {
 
     private final CommandService commandService;
     private final ProcessManagerService processManager;
+    private final DiscordUtils discordUtils;
 
-    public MessageReceivedListener(CommandService commandService, ProcessManagerService processManagerService) {
+    public MessageReceivedListener(CommandService commandService,
+                                   ProcessManagerService processManagerService,
+                                   DiscordUtils discordUtils) {
         this.commandService = commandService;
         this.processManager = processManagerService;
+        this.discordUtils = discordUtils;
     }
 
     @Override
@@ -36,6 +41,10 @@ public class MessageReceivedListener extends ListenerAdapter {
         MessageEventLocal messageEvent = new MessageEventLocal(message, statement, new HashMap<>());
         CommandHandler commandHandler = commandService.getCommand(messageEvent);
         if (commandHandler != null) {
+            if (!processManager.isActive()) {
+                if (!discordUtils.getAdmins().contains(event.getAuthor().getId())) return;
+                if (!commandHandler.isMultiProcessCommand()) return;
+            }
             log.info("executing {}", commandHandler.getClass().getName());
             commandHandler.execute(messageEvent);
         }

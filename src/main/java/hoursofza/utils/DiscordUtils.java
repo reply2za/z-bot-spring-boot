@@ -5,8 +5,12 @@ import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import hoursofza.listeners.EventWaiterListenerWrapper;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -21,8 +25,11 @@ public class DiscordUtils {
     private final EventWaiter waiter;
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
-    DiscordUtils(EventWaiterListenerWrapper eventWaiterListenerWrapper) {
+    private final Set<String> admins;
+
+    DiscordUtils(EventWaiterListenerWrapper eventWaiterListenerWrapper, @Value("${owners}") String admins) {
         this.waiter = eventWaiterListenerWrapper.getEventWaiter();
+        this.admins = new HashSet<>(Arrays.asList(admins.split(",")));;
     }
 
     /**
@@ -36,7 +43,6 @@ public class DiscordUtils {
                               Predicate<MessageReactionAddEvent> action,
                               Consumer<?> timeoutAction
                               ) {
-
         // boolean value is true when the reaction timeout is complete.
         AtomicBoolean isActiveReaction = new AtomicBoolean(true);
         // purpose of timekeeping is to reduce the waitForEvent timeout
@@ -81,4 +87,7 @@ public class DiscordUtils {
         runnable.run();
     }
 
+    public Set<String> getAdmins() {
+        return this.admins;
+    }
 }
