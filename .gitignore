@@ -33,3 +33,5 @@ build/
 .vscode/
 
 google-sheets-service-key.json
+
+.env
