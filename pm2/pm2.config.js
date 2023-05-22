@@ -1,12 +1,25 @@
+// NOTE: This script should be run from the root directory
+// example: pm2 start pm2/pm2.config.js -- --version 1.0.0
 require('dotenv').config();
-const VERSION = 'zbot-1.0.1';
-console.log(process.env.DEFAULT_TOKEN_ZBT);
+
+function getVersion(...flags) {
+  for (const name of flags) {
+    const index = process.argv.indexOf(name);
+    if (index !== -1) {
+      return process.argv[index + 1];
+    }
+  }
+}
+
+const version = getVersion('--v', '--version');
+if (!version) throw new Error('Expected version number');
+
 module.exports = {
   apps: [
     {
       name: 'z-bot-spring-boot',
       script: 'java',
-      args: `-Ddefault.token=${process.env.DEFAULT_TOKEN_ZBT} -Ddefault.dev-mode=${process.env.DEFAULT_DEV_MODE_ZBT} -jar -Xmx512m -Xss512k ../target/${VERSION}.jar`,
+      args: `-Ddefault.token=${process.env.DEFAULT_TOKEN_ZBT} -Ddefault.dev-mode=${process.env.DEFAULT_DEV_MODE_ZBT} -jar -Xmx512m -Xss512k ./target/zbot-${version}.jar`,
     },
   ],
 };
