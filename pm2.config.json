@@ -1,7 +1,0 @@
-{
-  "apps": [{
-    "name": "z-bot-spring-boot",
-    "script": "java",
-    "args": "-Ddefault.token=${DEFAULT_TOKEN_ZBT} -Ddefault.dev-mode=${DEFAULT_DEV_MODE_ZBT} -jar -Xmx512m -Xss512k ./target/zbot-1.0.1.jar"
-  }]
-}
