@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Objects;
 
 @Component
 public class Boot implements AdminCommandHandler {
@@ -35,7 +34,7 @@ public class Boot implements AdminCommandHandler {
                 (messageEvent) -> discordUtils.getAdmins().contains(messageEvent.getUserId()),
                 (messageEvent) -> {
                 processManagerService.setActive(!processManagerService.isActive());
-                if (Objects.nonNull(messageEvent.getUser())) message.removeReaction(gear, messageEvent.getUser()).queue();
+                if (messageEvent.getUser() != null) message.removeReaction(gear, messageEvent.getUser()).queue();
                 message.editMessage(this.getStatus()).queue();
                 return true;
                 },

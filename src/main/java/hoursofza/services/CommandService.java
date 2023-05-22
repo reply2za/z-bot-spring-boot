@@ -34,9 +34,9 @@ public class CommandService {
     @Nullable
     public CommandHandler getCommand(@Nonnull MessageEventLocal messageEventLocal) {
         if (this.admins.contains(messageEventLocal.getMessage().getAuthor().getId())) {
-            CommandHandler clientCmd = this.adminCommands.get(messageEventLocal.getStatement());
-            if (clientCmd != null) {
-                return clientCmd;
+            CommandHandler adminCmd = this.adminCommands.get(messageEventLocal.getStatement());
+            if (adminCmd != null) {
+                return adminCmd;
             }
         }
         return this.clientCommands.get(messageEventLocal.getStatement());

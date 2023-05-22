@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import java.awt.Color;
 import java.util.List;
-import java.util.Objects;
 
 @Component
 public class Help implements ClientCommandHandler {
@@ -35,13 +34,13 @@ public class Help implements ClientCommandHandler {
                 m,
                 10,
                 event -> {
-                    if (Objects.nonNull(event.getUser())) {
+                    if (event.getUser() != null) {
                         return event.getUser().getId().equals(m.getAuthor().getId());
                     }
                     return false;
                     },
                 event -> {
-                    if (Objects.nonNull(event.getUser())) {
+                    if (event.getUser() != null) {
                         m.removeReaction(thumbsUp, event.getUser()).queue();
                     }
                     return true;
