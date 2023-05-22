@@ -6,7 +6,7 @@ module.exports = {
     {
       name: 'z-bot-spring-boot',
       script: 'java',
-      args: `-Ddefault.token=${process.env.DEFAULT_TOKEN_ZBT} -Ddefault.dev-mode=${process.env.DEFAULT_DEV_MODE_ZBT} -jar -Xmx512m -Xss512k ./target/${VERSION}.jar`,
+      args: `-Ddefault.token=${process.env.DEFAULT_TOKEN_ZBT} -Ddefault.dev-mode=${process.env.DEFAULT_DEV_MODE_ZBT} -jar -Xmx512m -Xss512k ../target/${VERSION}.jar`,
     },
   ],
 };
