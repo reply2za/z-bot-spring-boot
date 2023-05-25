@@ -37,6 +37,7 @@ public class MockMessageSetup {
     public MockMessageSetup() throws Exception {
             AutoCloseable autoCloseable = MockitoAnnotations.openMocks(this);
             setupMocks();
+            autoCloseable.close();
     }
 
     public void setupMocks() {
