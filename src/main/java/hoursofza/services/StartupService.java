@@ -5,6 +5,7 @@ import hoursofza.listeners.EventWaiterListenerWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.hooks.EventListener;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ import java.util.List;
 @Slf4j
 public class StartupService {
     private final AppConfig appConfig;
-    private final List<Object> eventListeners;
+    private final List<EventListener> eventListeners;
 
     public StartupService(AppConfig appConfig, List<ListenerAdapter> listeners, EventWaiterListenerWrapper eventWaiterListenerWrapper) {
         this.appConfig = appConfig;
