@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,8 +28,12 @@ public class CommandService {
         this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
     }
 
-    private <T extends CommandHandler> void loadSpecificCommands(Iterable<T> commandClasses, Map<String, T> commands) {
-        commandClasses.forEach(commandHandler -> commandHandler.getNames().forEach(alias -> commands.put(alias, commandHandler)));
+    private <T extends CommandHandler> void loadSpecificCommands(Collection<T> commandClasses, Map<String, T> commands) {
+        commandClasses.stream().parallel().forEach(commandHandler ->
+                commandHandler.getNames().stream().parallel().forEach(alias ->
+                                commands.put(alias, commandHandler)
+                )
+        );
     }
 
     @Nullable
