@@ -11,15 +11,16 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class CommandService {
-    private final Map<String, ClientCommandHandler> clientCommands = new HashMap<>();
-    private final Map<String, AdminCommandHandler> adminCommands = new HashMap<>();
+    private final ConcurrentMap<String, ClientCommandHandler> clientCommands = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, AdminCommandHandler> adminCommands = new ConcurrentHashMap<>();
     private final Set<String> admins;
 
     public CommandService(Set<ClientCommandHandler> clientCommandClasses, Set<AdminCommandHandler> adminCommandClasses, @Value("${owners}") String admins) {
@@ -31,7 +32,15 @@ public class CommandService {
     private <T extends CommandHandler> void loadSpecificCommands(Collection<T> commandClasses, Map<String, T> commands) {
         commandClasses.stream().parallel().forEach(commandHandler ->
                 commandHandler.getNames().stream().parallel().forEach(alias ->
-                                commands.put(alias, commandHandler)
+                        {
+                            if (commands.get(alias) != null) {
+                                throw new RuntimeException("Command aliases must be unique. Duplicate value: '" +
+                                        alias + "'. Exists in classes '" + commandHandler.getClass().getName()
+                                        + "' and '" + commands.get(alias).getClass().getName() + "'");
+                            } else {
+                                commands.put(alias, commandHandler);
+                            }
+                        }
                 )
         );
     }
