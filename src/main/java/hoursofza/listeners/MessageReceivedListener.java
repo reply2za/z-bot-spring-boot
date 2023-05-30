@@ -36,7 +36,7 @@ public class MessageReceivedListener extends ListenerAdapter {
         String content = message.getContentRaw();
         if (!content.substring(0,processManager.getPrefix().length()).equals(processManager.getPrefix())) return;
         String statement = message.getContentRaw().split("\\s+")[0];
-        statement = statement.substring(processManager.getPrefix().length());
+        statement = statement.substring(processManager.getPrefix().length()).toLowerCase();
         if (statement.isBlank()) return;
         MessageEventLocal messageEvent = new MessageEventLocal(message, statement, new HashMap<>());
         CommandHandler commandHandler = commandService.getCommand(messageEvent);

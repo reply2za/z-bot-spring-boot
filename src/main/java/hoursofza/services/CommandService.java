@@ -31,17 +31,16 @@ public class CommandService {
 
     private <T extends CommandHandler> void loadSpecificCommands(Collection<T> commandClasses, Map<String, T> commands) {
         commandClasses.stream().parallel().forEach(commandHandler ->
-                commandHandler.getNames().stream().parallel().forEach(alias ->
-                        {
-                            if (commands.get(alias) != null) {
-                                throw new RuntimeException("Command aliases must be unique. Duplicate value: '" +
-                                        alias + "'. Exists in classes '" + commandHandler.getClass().getName()
-                                        + "' and '" + commands.get(alias).getClass().getName() + "'");
-                            } else {
-                                commands.put(alias, commandHandler);
-                            }
-                        }
-                )
+                commandHandler.getNames().stream().parallel().forEach(alias -> {
+                    alias = alias.toLowerCase();
+                    if (commands.get(alias) != null) {
+                        throw new RuntimeException("Command aliases must be unique. Duplicate value: '" +
+                                alias + "'. Exists in classes '" + commandHandler.getClass().getName()
+                                + "' and '" + commands.get(alias).getClass().getName() + "'");
+                    } else {
+                        commands.put(alias, commandHandler);
+                    }
+                })
         );
     }
 

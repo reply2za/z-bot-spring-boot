@@ -8,7 +8,7 @@ public interface CommandHandler {
     void execute(MessageEventLocal event);
 
     /**
-     * @return A list of callable names for the command handler.
+     * @return A list of callable names for the command handler. Is case-insensitive.
      */
     List<String> getNames();
 
