@@ -27,6 +27,7 @@ public class CommandService {
     private final Set<String> admins;
 
     public CommandService(Set<ClientCommandHandler> clientCommandClasses, Set<AdminCommandHandler> adminCommandClasses, @Value("${owners}") String admins) {
+        this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
         this.loadSpecificCommands(clientCommandClasses, this.clientCommands);
         this.loadSpecificCommands(adminCommandClasses, this.adminCommands);
         StringBuilder shadowedCommands = new StringBuilder();
@@ -37,7 +38,6 @@ public class CommandService {
             log.warn("Admin commands will shadow client commands: " +
                     shadowedCommands.substring(0, shadowedCommands.length() - KEY_SEPARATOR.length()));
         }
-        this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
     }
 
     private <T extends CommandHandler> void loadSpecificCommands(Collection<T> commandClasses, Map<String, T> commands) {
