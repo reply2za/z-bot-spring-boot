@@ -6,6 +6,7 @@ import hoursofza.commands.interfaces.CommandHandler;
 import hoursofza.utils.MessageEventLocal;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 @Service
+@Slf4j
 public class CommandService {
+    private static final String KEY_SEPARATOR = ", ";
     private final ConcurrentMap<String, ClientCommandHandler> clientCommands = new ConcurrentHashMap<>();
     private final ConcurrentMap<String, AdminCommandHandler> adminCommands = new ConcurrentHashMap<>();
     private final Set<String> admins;
@@ -26,6 +29,14 @@ public class CommandService {
     public CommandService(Set<ClientCommandHandler> clientCommandClasses, Set<AdminCommandHandler> adminCommandClasses, @Value("${owners}") String admins) {
         this.loadSpecificCommands(clientCommandClasses, this.clientCommands);
         this.loadSpecificCommands(adminCommandClasses, this.adminCommands);
+        StringBuilder shadowedCommands = new StringBuilder();
+        this.adminCommands.keySet().stream().parallel()
+                .filter(this.clientCommands::containsKey)
+                .forEach(key -> shadowedCommands.append(key).append(KEY_SEPARATOR));
+        if (shadowedCommands.length() > 0) {
+            log.warn("Admin commands will shadow client commands: " +
+                    shadowedCommands.substring(0, shadowedCommands.length() - KEY_SEPARATOR.length()));
+        }
         this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
     }
 
