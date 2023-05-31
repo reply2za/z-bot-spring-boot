@@ -35,6 +35,7 @@ public class DatabaseService {
                 GoogleNetHttpTransport.newTrustedTransport(),
                 GsonFactory.getDefaultInstance(),
                 new HttpCredentialsAdapter(getCredentials()))
+                .setApplicationName("z-bot-spring-boot")
                 .build();
     }
 
