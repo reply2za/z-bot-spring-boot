@@ -1,7 +1,7 @@
 package hoursofza.utils;
 
-import jakarta.annotation.Nonnull;
 import net.dv8tion.jda.api.entities.Message;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -11,7 +11,7 @@ public class MessageEventLocal {
 
     public Map<String, Object> data;
 
-    public MessageEventLocal(@Nonnull Message message, @Nonnull String statement, @Nonnull Map<String, Object> data) {
+    public MessageEventLocal(@NotNull Message message, @NotNull String statement, @NotNull Map<String, Object> data) {
     this.message = message;
     this.statement = statement;
     this.data = data;

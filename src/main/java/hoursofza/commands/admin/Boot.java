@@ -5,6 +5,7 @@ import hoursofza.config.AppConfig;
 import hoursofza.services.ProcessManagerService;
 import hoursofza.utils.DiscordUtils;
 import hoursofza.utils.MessageEventLocal;
+import hoursofza.enums.Unicode;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,8 @@ public class Boot implements AdminCommandHandler {
     final DiscordUtils discordUtils;
     final AppConfig appConfig;
     final String pid;
+    private final static Emoji GEAR = Unicode.GEAR.getEmoji();
+
     Boot(ProcessManagerService processManagerService, DiscordUtils discordUtils, AppConfig appConfig) {
         this.pid = String.valueOf(ProcessHandle.current().pid());
         this.processManagerService = processManagerService;
@@ -26,19 +29,18 @@ public class Boot implements AdminCommandHandler {
 
     @Override
     public void execute(MessageEventLocal event) {
-        Emoji gear = Emoji.fromUnicode("⚙");
-        event.getMessage().getChannel().sendMessage(this.getStatus()).queue(message ->
-        {
-            message.addReaction(gear).queue();
+        event.getMessage().getChannel().sendMessage(this.getStatus()).queue(message -> {
+            message.addReaction(GEAR).queue();
             discordUtils.awaitReaction(message, 60,
-                (messageEvent) -> discordUtils.getAdmins().contains(messageEvent.getUserId()),
-                (messageEvent) -> {
-                processManagerService.setActive(!processManagerService.isActive());
-                if (messageEvent.getUser() != null) message.removeReaction(gear, messageEvent.getUser()).queue();
-                message.editMessage(this.getStatus()).queue();
-                return true;
-                },
-                (x) -> message.clearReactions(gear).queue()
+                    (messageEvent) -> discordUtils.getAdmins().contains(messageEvent.getUserId()),
+                    (messageEvent) -> {
+                        processManagerService.setActive(!processManagerService.isActive());
+                        if (messageEvent.getUser() != null)
+                            message.removeReaction(GEAR, messageEvent.getUser()).queue();
+                        message.editMessage(this.getStatus()).queue();
+                        return true;
+                    },
+                    (x) -> message.clearReactions(GEAR).queue()
             );
         });
 
