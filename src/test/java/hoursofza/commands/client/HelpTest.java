@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -24,21 +25,17 @@ public class HelpTest {
 
     @Mock
     private DiscordUtils discordUtils;
-
     @Mock
     private MessageEventLocal messageEvent;
-
+    @InjectMocks
     private Help help;
-
+    @InjectMocks
     private MockMessageSetup mockMessageSetup;
-
     private AutoCloseable autoCloseable;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    public void setUp() {
         autoCloseable = MockitoAnnotations.openMocks(this);
-        help = new Help(discordUtils);
-        mockMessageSetup = new MockMessageSetup();
         when(messageEvent.getMessage()).thenReturn(mockMessageSetup.message);
         mockMessageSetup.setupMocks();
     }
@@ -60,8 +57,8 @@ public class HelpTest {
         verify(mockMessageSetup.message, times(1)).getChannel();
         verify(mockMessageSetup.channel, times(1)).sendMessage(messageCaptor.capture());
         verify(mockMessageSetup.messageAction, times(1)).queue();
-        verify(mockMessageSetup.message, times(1)).addReaction(any(Emoji.class));
-        verify(mockMessageSetup.reactionAction, times(1)).queue();
+        verify(mockMessageSetup.message, times(2)).addReaction(any(Emoji.class));
+        verify(mockMessageSetup.reactionAction, times(2)).queue();
         verify(discordUtils, times(1)).awaitReaction(any(Message.class), anyInt(), any(), any(), any());
 
         MessageCreateData capturedMessage = messageCaptor.getValue();
