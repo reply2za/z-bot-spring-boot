@@ -31,7 +31,12 @@ public class StartupService {
         log.info("Initializing Discord bot");
         JDABuilder.createDefault(this.appConfig.getToken())
                 .addEventListeners(this.eventListeners.toArray())
-                .enableIntents(GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.MESSAGE_CONTENT)
+                .enableIntents(
+                        GatewayIntent.GUILD_MEMBERS,
+                        GatewayIntent.DIRECT_MESSAGES,
+                        GatewayIntent.MESSAGE_CONTENT,
+                        GatewayIntent.GUILD_VOICE_STATES
+                )
                 .build();
         log.info("Mode: " + (this.appConfig.isDevMode() ? "Development" : "Production"));
     }

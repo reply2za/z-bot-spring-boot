@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -35,10 +36,12 @@ public class MessageReceivedListener extends ListenerAdapter {
         Message message = event.getMessage();
         String content = message.getContentRaw();
         if (!content.substring(0,processManager.getPrefix().length()).equals(processManager.getPrefix())) return;
-        String statement = message.getContentRaw().split("\\s+")[0];
+        List<String> messageContents = List.of(message.getContentRaw().split("\\s+"));
+        if (messageContents.size() < 1) return;
+        String statement = messageContents.get(0);
         statement = statement.substring(processManager.getPrefix().length()).toLowerCase();
         if (statement.isBlank()) return;
-        MessageEventLocal messageEvent = new MessageEventLocal(message, statement, new HashMap<>());
+        MessageEventLocal messageEvent = new MessageEventLocal(message, statement, new HashMap<>(), messageContents.subList(1, messageContents.size()));
         CommandHandler commandHandler = commandService.getCommand(messageEvent);
         if (commandHandler != null) {
             if (!processManager.isActive()) {

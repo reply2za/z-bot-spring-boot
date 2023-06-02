@@ -7,7 +7,6 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,7 +37,8 @@ public class DiscordUtils {
      *                        Returns whether the action should be executed.
      * @param action A Predicate that performs the action. Returning true will keep the reaction alive.
      */
-    public void awaitReaction(Message message, int timeoutSeconds,
+    public void awaitReaction(Message message,
+                              int timeoutSeconds,
                               Predicate<MessageReactionAddEvent> isValidReaction,
                               Predicate<MessageReactionAddEvent> action,
                               Consumer<?> timeoutAction

@@ -21,6 +21,10 @@
 		<id>chew-m2-snapshots</id>
 		<url>https://m2.chew.pro/snapshots/</url>
 		</repository>
+		<repository>
+			<id>jitpack</id>
+			<url>https://jitpack.io</url>
+		</repository>
 	</repositories>
 	<dependencies>
 		<dependency>
@@ -72,6 +76,11 @@
 			<groupId>com.google.auth</groupId>
 			<artifactId>google-auth-library-oauth2-http</artifactId>
 			<version>1.16.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.walkyst</groupId>
+			<artifactId>lavaplayer-fork</artifactId>
+			<version>1.4.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
