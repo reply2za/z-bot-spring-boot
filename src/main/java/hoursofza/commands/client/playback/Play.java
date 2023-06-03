@@ -13,6 +13,7 @@ import hoursofza.handlers.AudioPlayerSendHandler;
 import hoursofza.listeners.Audio;
 import hoursofza.services.GuildService;
 import hoursofza.services.ProcessManagerService;
+import hoursofza.services.YoutubeSearchService;
 import hoursofza.utils.MessageEventLocal;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
@@ -25,10 +26,12 @@ public class Play implements ClientCommandHandler {
 
     Audio audioListener;
     ProcessManagerService processManagerService;
+    YoutubeSearchService youtubeSearchService;
 
-    Play(Audio audioListener, ProcessManagerService processManagerService) {
+    Play(Audio audioListener, ProcessManagerService processManagerService, YoutubeSearchService youtubeSearchService) {
         this.audioListener = audioListener;
         this.processManagerService = processManagerService;
+        this.youtubeSearchService = youtubeSearchService;
     }
 
     @Override
@@ -64,7 +67,25 @@ public class Play implements ClientCommandHandler {
         AudioSourceManagers.registerRemoteSources(playerManager);
         AudioPlayerSendHandler audioPlayerSendHandler = new AudioPlayerSendHandler(player);
         member.getGuild().getAudioManager().setSendingHandler(audioPlayerSendHandler);
-        String link = event.getArgs().get(0);
+        String linkOrWord = String.join(" ", event.getArgs());
+        String link = "";
+        if (linkOrWord.contains(" ") || !linkOrWord.contains(".")) {
+            String videoId = youtubeSearchService.searchAndGetLink(linkOrWord);
+            if (videoId.isBlank()) {
+                event.getMessage().getChannel().sendMessage("*could not find video*").queue();
+                return;
+            }
+            link = "https://www.youtube.com/watch?v=" + videoId;
+            System.out.println(link);
+        } else if (linkOrWord.contains("spotify.com")) {
+            event.getMessage().getChannel().sendMessage("*spotify is not currently supported*").queue();
+        } else {
+            link = linkOrWord;
+        }
+        if (link.isBlank()) {
+            event.getMessage().getChannel().sendMessage("there was an issue processing your request").queue();
+            return;
+        };
         try {
             playerManager.loadItem(link, new AudioLoadResultHandler() {
 
