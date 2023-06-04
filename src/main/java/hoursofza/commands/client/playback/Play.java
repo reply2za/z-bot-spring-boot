@@ -17,8 +17,13 @@ import hoursofza.services.YoutubeSearchService;
 import hoursofza.utils.MessageEventLocal;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -38,13 +43,44 @@ public class Play implements ClientCommandHandler {
 
     @Override
     public void execute(MessageEventLocal event) {
-        Member member = event.getMessage().getMember();
+        if (event.getArgs().size() < 1) {
+            event.getMessage().getChannel().sendMessage("*no link provided*").queue();
+            return;
+        }
+        String wordOrLink = String.join(" ", event.getArgs()).trim();
+        UserProvidedType type = wordOrLink.contains(" ") || !wordOrLink.contains(".") ? UserProvidedType.LINK : UserProvidedType.WORDS;
+        playCommand(event.getMessage().getMember(), event.getMessage().getChannel(), type, wordOrLink);
+    }
+
+    @Override
+    public List<String> getNames() {
+        return List.of("play", "p");
+    }
+
+    @Override
+    public void executeSlashCommand(@NotNull SlashCommandInteractionEvent slashCommandEvent) {
+        OptionMapping optionMapping = slashCommandEvent.getOptions().get(0);
+        UserProvidedType type = UserProvidedType.valueOf(optionMapping.getName().toUpperCase());
+        playCommand(slashCommandEvent.getMember(), slashCommandEvent.getChannel(), type, optionMapping.getAsString());
+        slashCommandEvent.reply("*playing (" + (slashCommandEvent.getMember() != null ?
+                slashCommandEvent.getMember().getNickname() : slashCommandEvent.getUser().getName()) +
+                ")*").queue();
+    }
+
+    @Override
+    public SlashCommandData getSlashCommand() {
+        return Commands.slash("play", "plays a link or searches YouTube and plays")
+                .addOption(OptionType.STRING, "words", "words for search")
+                .addOption(OptionType.STRING, "link", "link to play");
+    }
+
+    private void playCommand(Member member, @NotNull MessageChannel channel, UserProvidedType type, String userInput) {
         if (member == null) {
             return;
         }
         GuildVoiceState voiceState = member.getVoiceState();
         if (voiceState == null || voiceState.getChannel() == null) {
-            event.getMessage().getChannel().sendMessage("*must be in a voice channel*").queue();
+            channel.sendMessage("*must be in a voice channel*").queue();
             return;
         }
         member.getGuild().getAudioManager().openAudioConnection(voiceState.getChannel());
@@ -58,36 +94,32 @@ public class Play implements ClientCommandHandler {
         } else {
             if (player.isPaused()) {
                 player.setPaused(false);
-                event.getMessage().getChannel().sendMessage("*playing*").queue();
+                channel.sendMessage("*playing*").queue();
                 return;
             }
         }
-        if (event.getArgs().size() < 1) {
-            event.getMessage().getChannel().sendMessage("*no link provided*").queue();
-            return;
-        }
+
         AudioSourceManagers.registerRemoteSources(playerManager);
         AudioPlayerSendHandler audioPlayerSendHandler = new AudioPlayerSendHandler(player);
         member.getGuild().getAudioManager().setSendingHandler(audioPlayerSendHandler);
-        String linkOrWord = String.join(" ", event.getArgs());
         String link = "";
-        if (linkOrWord.contains(" ") || !linkOrWord.contains(".")) {
-            String videoId = youtubeSearchService.searchAndGetLink(linkOrWord);
+        if (type == UserProvidedType.WORDS) {
+            String videoId = youtubeSearchService.searchAndGetLink(userInput);
             if (videoId.isBlank()) {
-                event.getMessage().getChannel().sendMessage("*could not find video*").queue();
+                channel.sendMessage("*could not find video*").queue();
                 return;
             }
             link = "https://www.youtube.com/watch?v=" + videoId;
-            System.out.println(link);
-        } else if (linkOrWord.contains("spotify.com")) {
-            event.getMessage().getChannel().sendMessage("*spotify is not currently supported*").queue();
+        } else if (userInput.contains("spotify.com")) {
+            channel.sendMessage("*spotify is not currently supported*").queue();
         } else {
-            link = linkOrWord;
+            link = userInput;
         }
         if (link.isBlank()) {
-            event.getMessage().getChannel().sendMessage("there was an issue processing your request").queue();
+            channel.sendMessage("there was an issue processing your request").queue();
             return;
-        };
+        }
+
         try {
             playerManager.loadItem(link, new AudioLoadResultHandler() {
 
@@ -115,14 +147,9 @@ public class Play implements ClientCommandHandler {
             System.out.println("there was an exception");
         }
     }
+}
 
-    @Override
-    public List<String> getNames() {
-        return List.of("play", "p");
-    }
-
-    @Override
-    public SlashCommandData getSlashCommand() {
-        return Commands.slash("play", "[WIP] plays a link");
-    }
+enum UserProvidedType {
+    LINK,
+    WORDS
 }
