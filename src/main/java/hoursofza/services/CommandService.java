@@ -3,10 +3,8 @@ package hoursofza.services;
 import hoursofza.commands.interfaces.AdminCommandHandler;
 import hoursofza.commands.interfaces.ClientCommandHandler;
 import hoursofza.commands.interfaces.CommandHandler;
-import hoursofza.utils.MessageEventLocal;
+import hoursofza.store.CommandStore;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,24 +20,25 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class CommandService {
-    private final ConcurrentMap<String, ClientCommandHandler> clientCommands = new ConcurrentHashMap<>();
-    private final ConcurrentMap<String, AdminCommandHandler> adminCommands = new ConcurrentHashMap<>();
-    private final Set<String> admins;
 
     public CommandService(
             Set<ClientCommandHandler> clientCommandClasses,
             Set<AdminCommandHandler> adminCommandClasses,
-            @Value("${owners}") String admins
+            @Value("${owners}") String admins,
+            CommandStore commandStore
     ) {
-        this.admins = new HashSet<>(Arrays.asList(admins.split(",")));
-        this.loadSpecificCommands(clientCommandClasses, this.clientCommands);
-        this.loadSpecificCommands(adminCommandClasses, this.adminCommands);
-        String shadowedCommands = this.adminCommands.keySet().parallelStream()
-                .filter(this.clientCommands::containsKey)
+        Set<String> adminsSet = new HashSet<>(Arrays.asList(admins.split(",")));
+        ConcurrentMap<String, ClientCommandHandler> clientCommands = new ConcurrentHashMap<>();
+        this.loadSpecificCommands(clientCommandClasses, clientCommands);
+        ConcurrentMap<String, AdminCommandHandler> adminCommands = new ConcurrentHashMap<>();
+        this.loadSpecificCommands(adminCommandClasses, adminCommands);
+        String shadowedCommands = adminCommands.keySet().parallelStream()
+                .filter(clientCommands::containsKey)
                 .collect(Collectors.joining(", "));
         if (shadowedCommands.length() > 0) {
             log.warn("Admin commands will shadow client commands: " + shadowedCommands);
         }
+        commandStore.setClientCommands(clientCommands).setAdminCommands(adminCommands).setAdmins(adminsSet);
     }
 
     private <T extends CommandHandler> void loadSpecificCommands(Collection<T> commandClasses, Map<String, T> commands) {
@@ -56,14 +55,5 @@ public class CommandService {
         );
     }
 
-    @Nullable
-    public CommandHandler getCommand(@NotNull MessageEventLocal messageEventLocal) {
-        if (this.admins.contains(messageEventLocal.getMessage().getAuthor().getId())) {
-            CommandHandler adminCmd = this.adminCommands.get(messageEventLocal.getStatement());
-            if (adminCmd != null) {
-                return adminCmd;
-            }
-        }
-        return this.clientCommands.get(messageEventLocal.getStatement());
-    }
+
 }

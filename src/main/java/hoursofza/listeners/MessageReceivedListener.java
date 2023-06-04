@@ -1,14 +1,18 @@
 package hoursofza.listeners;
 
+import hoursofza.commands.interfaces.ClientCommandHandler;
 import hoursofza.commands.interfaces.CommandHandler;
-import hoursofza.services.CommandService;
+import hoursofza.config.AppConfig;
 import hoursofza.services.ProcessManagerService;
+import hoursofza.store.CommandStore;
 import hoursofza.utils.DiscordUtils;
 import hoursofza.utils.MessageEventLocal;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -18,16 +22,22 @@ import java.util.List;
 @Component
 public class MessageReceivedListener extends ListenerAdapter {
 
-    private final CommandService commandService;
+    private final CommandStore commandStore;
     private final ProcessManagerService processManager;
     private final DiscordUtils discordUtils;
 
-    public MessageReceivedListener(CommandService commandService,
-                                   ProcessManagerService processManagerService,
-                                   DiscordUtils discordUtils) {
-        this.commandService = commandService;
+    private final AppConfig appConfig;
+
+    public MessageReceivedListener(
+            CommandStore commandStore,
+            ProcessManagerService processManagerService,
+            DiscordUtils discordUtils,
+            AppConfig appConfig
+    ) {
+        this.commandStore = commandStore;
         this.processManager = processManagerService;
         this.discordUtils = discordUtils;
+        this.appConfig = appConfig;
     }
 
     @Override
@@ -35,22 +45,44 @@ public class MessageReceivedListener extends ListenerAdapter {
         if (event.getAuthor().isBot()) return;
         Message message = event.getMessage();
         String content = message.getContentRaw();
-        if (!content.substring(0,processManager.getPrefix().length()).equals(processManager.getPrefix())) return;
+        if (!content.substring(0, processManager.getPrefix().length()).equals(processManager.getPrefix())) return;
         List<String> messageContents = List.of(message.getContentRaw().split("\\s+"));
         if (messageContents.size() < 1) return;
         String statement = messageContents.get(0);
         statement = statement.substring(processManager.getPrefix().length()).toLowerCase();
         if (statement.isBlank()) return;
         MessageEventLocal messageEvent = new MessageEventLocal(message, statement, new HashMap<>(), messageContents.subList(1, messageContents.size()));
-        CommandHandler commandHandler = commandService.getCommand(messageEvent);
+        CommandHandler commandHandler = commandStore.getCommand(messageEvent);
         if (commandHandler != null) {
-            if (!processManager.isActive()) {
-                if (!discordUtils.getAdmins().contains(event.getAuthor().getId())) return;
-                if (!commandHandler.isMultiProcessCommand()) return;
-            }
+            if (isInvalidInstanceAndPermission(commandHandler, message.getAuthor().getId())) return;
             log.info("executing {}", commandHandler.getClass().getName());
             commandHandler.execute(messageEvent);
         }
+    }
+
+    @Override
+    public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        ClientCommandHandler clientCommand = commandStore.getClientCommand(event.getName());
+        if (clientCommand != null) {
+            if (isInvalidInstanceAndPermission(clientCommand, event.getUser().getId())) return;
+            clientCommand.executeSlashCommand(event);
+        } else {
+            event.reply("this command is no longer supported").queue();
+        }
+    }
+
+    /**
+     * Determines whether the user has the required permissions to run the command. Also checks instance type.
+     * The command should NOT be run if this method returns false.
+     *
+     * @param commandHandler The command to run.
+     * @param userId         The user making the request.
+     * @return Whether the command should be run.
+     */
+    private boolean isInvalidInstanceAndPermission(CommandHandler commandHandler, String userId) {
+        boolean isAdmin = discordUtils.getAdmins().contains(userId);
+        if (!processManager.isActive() && (!isAdmin || !commandHandler.isMultiProcessCommand())) return true;
+        return appConfig.isDevMode() && !isAdmin;
     }
 }
 

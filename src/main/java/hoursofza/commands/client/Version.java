@@ -33,4 +33,5 @@ public class Version implements ClientCommandHandler {
     public List<String> getNames() {
         return List.of("version", "v");
     }
+
 }

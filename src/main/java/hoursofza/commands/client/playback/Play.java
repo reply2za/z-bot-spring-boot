@@ -17,6 +17,8 @@ import hoursofza.services.YoutubeSearchService;
 import hoursofza.utils.MessageEventLocal;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -116,6 +118,11 @@ public class Play implements ClientCommandHandler {
 
     @Override
     public List<String> getNames() {
-        return List.of("play");
+        return List.of("play", "p");
+    }
+
+    @Override
+    public SlashCommandData getSlashCommand() {
+        return Commands.slash("play", "[WIP] plays a link");
     }
 }

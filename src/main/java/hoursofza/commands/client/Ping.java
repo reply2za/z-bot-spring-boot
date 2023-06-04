@@ -18,4 +18,5 @@ public class Ping implements ClientCommandHandler {
     public List<String> getNames() {
         return List.of("ping");
     }
+
 }
