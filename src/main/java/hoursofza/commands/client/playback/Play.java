@@ -32,14 +32,16 @@ import java.util.List;
 @Component
 public class Play implements ClientCommandHandler {
 
-    Audio audioListener;
-    ProcessManagerService processManagerService;
-    YoutubeSearchService youtubeSearchService;
+    private final Audio audioListener;
+    private final ProcessManagerService processManagerService;
+    private final YoutubeSearchService youtubeSearchService;
+    private final Resume resume;
 
-    Play(Audio audioListener, ProcessManagerService processManagerService, YoutubeSearchService youtubeSearchService) {
+    Play(Audio audioListener, ProcessManagerService processManagerService, YoutubeSearchService youtubeSearchService, Resume resume) {
         this.audioListener = audioListener;
         this.processManagerService = processManagerService;
         this.youtubeSearchService = youtubeSearchService;
+        this.resume = resume;
     }
 
     @Override
@@ -49,7 +51,7 @@ public class Play implements ClientCommandHandler {
             return;
         }
         String wordOrLink = String.join(" ", event.getArgs()).trim();
-        UserProvidedType type = wordOrLink.contains(" ") || !wordOrLink.contains(".") ? UserProvidedType.LINK : UserProvidedType.WORDS;
+        UserProvidedType type = wordOrLink.contains(" ") || !wordOrLink.contains(".") ? UserProvidedType.WORDS : UserProvidedType.LINK;
         playCommand(event.getMessage().getMember(), event.getMessage().getChannel(), type, wordOrLink);
     }
 
@@ -74,7 +76,7 @@ public class Play implements ClientCommandHandler {
 
     @Override
     public SlashCommandData getSlashCommand() {
-        return Commands.slash("play", "plays a link or searches YouTube and plays")
+        return Commands.slash("play", "plays a link or searches YouTube to play")
                 .addOption(OptionType.STRING, "words", "words for search")
                 .addOption(OptionType.STRING, "link", "link to play");
     }
@@ -97,9 +99,9 @@ public class Play implements ClientCommandHandler {
             guildService.setAudioPlayer(player);
             player.addListener(audioListener);
         } else {
-            if (player.isPaused()) {
+            if (resume.resumeCommand(member.getGuild())) {
                 player.setPaused(false);
-                channel.sendMessage("*playing*").queue();
+                channel.sendMessage("*resumed*").queue();
                 return;
             }
         }

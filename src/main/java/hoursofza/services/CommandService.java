@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -42,6 +43,10 @@ public class CommandService {
     }
 
     private <T extends CommandHandler> void loadSpecificCommands(Collection<T> commandClasses, Map<String, T> commands) {
+        Optional<T> unnamedCommand = commandClasses.parallelStream().filter(commandClass -> commandClass.getNames() == null).findAny();
+        if (unnamedCommand.isPresent()) {
+            throw new RuntimeException("All commands must have \"getNames()\" implemented, (check " + unnamedCommand.get().getClass().getName() + ")");
+        }
         commandClasses.parallelStream().forEach(commandHandler ->
                 commandHandler.getNames().parallelStream().map(String::toLowerCase).forEach(alias -> {
                     if (commands.get(alias) == null) {

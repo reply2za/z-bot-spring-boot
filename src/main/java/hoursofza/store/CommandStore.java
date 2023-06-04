@@ -12,8 +12,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
+/**
+ * Allows for commands to call other commands. The commands are loaded after CommandStore is initialized.
+ * If the data within this class is empty then try using "@DependsOn("commandService")" to ensure that CommandService
+ * is being created first.
+ */
 @Service
 public class CommandStore {
 
@@ -43,10 +47,10 @@ public class CommandStore {
 
     /**
      * Sets the client commands. Can only be called once.
-     * @param clientCommands
+     * @param clientCommands The map of aliases to client commands.
      * @return
      */
-    public CommandStore setClientCommands(ConcurrentMap<String, ClientCommandHandler> clientCommands) {
+    public CommandStore setClientCommands(Map<String, ClientCommandHandler> clientCommands) {
         if (this.clientCommands != null) {
             throw new IllegalCallerException("cannot call method after being finalized");
         }
@@ -56,10 +60,10 @@ public class CommandStore {
 
     /**
      * Sets the admin commands. Can only be called once.
-     * @param adminCommands
+     * @param adminCommands The map of aliases to admin commands.
      * @return
      */
-    public CommandStore setAdminCommands(ConcurrentMap<String, AdminCommandHandler> adminCommands) {
+    public CommandStore setAdminCommands(Map<String, AdminCommandHandler> adminCommands) {
         if (this.adminCommands != null) {
             throw new IllegalCallerException("cannot call method after being finalized");
         }
