@@ -9,6 +9,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import hoursofza.commands.interfaces.ClientCommandHandler;
+import hoursofza.enums.UserProvidedType;
 import hoursofza.handlers.AudioPlayerSendHandler;
 import hoursofza.listeners.Audio;
 import hoursofza.services.GuildService;
@@ -59,6 +60,10 @@ public class Play implements ClientCommandHandler {
 
     @Override
     public void executeSlashCommand(@NotNull SlashCommandInteractionEvent slashCommandEvent) {
+        if (slashCommandEvent.getOptions().size() < 1) {
+            slashCommandEvent.reply("search or link option is required").queue();
+            return;
+        }
         OptionMapping optionMapping = slashCommandEvent.getOptions().get(0);
         UserProvidedType type = UserProvidedType.valueOf(optionMapping.getName().toUpperCase());
         playCommand(slashCommandEvent.getMember(), slashCommandEvent.getChannel(), type, optionMapping.getAsString());
@@ -147,9 +152,4 @@ public class Play implements ClientCommandHandler {
             System.out.println("there was an exception");
         }
     }
-}
-
-enum UserProvidedType {
-    LINK,
-    WORDS
 }
