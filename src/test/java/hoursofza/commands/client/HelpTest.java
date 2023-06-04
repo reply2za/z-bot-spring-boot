@@ -53,7 +53,7 @@ public class HelpTest {
 
         verify(messageEvent, times(1)).getMessage();
         verify(mockMessageSetup.message, times(1)).getAuthor();
-        verify(mockMessageSetup.user, times(1)).getAsMention();
+        verify(mockMessageSetup.user, times(1)).getName();
         verify(mockMessageSetup.message, times(1)).getChannel();
         verify(mockMessageSetup.channel, times(1)).sendMessage(messageCaptor.capture());
         verify(mockMessageSetup.messageAction, times(1)).queue();
