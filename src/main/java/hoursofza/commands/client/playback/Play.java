@@ -1,21 +1,20 @@
 package hoursofza.commands.client.playback;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import hoursofza.commands.interfaces.ClientCommandHandler;
 import hoursofza.enums.UserProvidedType;
+import hoursofza.handlers.AudioLoadHandler;
 import hoursofza.handlers.AudioPlayerSendHandler;
-import hoursofza.listeners.Audio;
+import hoursofza.listeners.AudioEventListener;
 import hoursofza.services.GuildService;
 import hoursofza.services.ProcessManagerService;
 import hoursofza.services.YoutubeSearchService;
+import hoursofza.services.playback.QueueItem;
 import hoursofza.utils.MessageEventLocal;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.GuildVoiceState;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -32,13 +31,11 @@ import java.util.List;
 @Component
 public class Play implements ClientCommandHandler {
 
-    private final Audio audioListener;
     private final ProcessManagerService processManagerService;
     private final YoutubeSearchService youtubeSearchService;
     private final Resume resume;
 
-    Play(Audio audioListener, ProcessManagerService processManagerService, YoutubeSearchService youtubeSearchService, Resume resume) {
-        this.audioListener = audioListener;
+    Play(ProcessManagerService processManagerService, YoutubeSearchService youtubeSearchService, Resume resume) {
         this.processManagerService = processManagerService;
         this.youtubeSearchService = youtubeSearchService;
         this.resume = resume;
@@ -90,25 +87,17 @@ public class Play implements ClientCommandHandler {
             channel.sendMessage("*must be in a voice channel*").queue();
             return;
         }
-        member.getGuild().getAudioManager().openAudioConnection(voiceState.getChannel());
-        AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
         GuildService guildService = processManagerService.getServer(member.getGuild().getId());
         AudioPlayer player = guildService.getAudioPlayer();
-        if (player == null) {
-            player = playerManager.createPlayer();
-            guildService.setAudioPlayer(player);
-            player.addListener(audioListener);
-        } else {
-            if (resume.resumeCommand(member.getGuild())) {
-                player.setPaused(false);
-                channel.sendMessage("*resumed*").queue();
-                return;
-            }
+        if (!member.getGuild().getAudioManager().isConnected()) {
+            guildService.getQueue().clear();
         }
-
-        AudioSourceManagers.registerRemoteSources(playerManager);
-        AudioPlayerSendHandler audioPlayerSendHandler = new AudioPlayerSendHandler(player);
-        member.getGuild().getAudioManager().setSendingHandler(audioPlayerSendHandler);
+        if (player != null && resume.resumeCommand(member.getGuild())) {
+            player.setPaused(false);
+            channel.sendMessage("*resumed*").queue();
+            return;
+        }
+        boolean queueWasEmpty = guildService.getQueue().isEmpty();
         String link = "";
         if (type == UserProvidedType.WORDS) {
             String videoId = youtubeSearchService.searchAndGetLink(userInput);
@@ -117,41 +106,56 @@ public class Play implements ClientCommandHandler {
                 return;
             }
             link = "https://www.youtube.com/watch?v=" + videoId;
+            guildService.getQueue().add(new QueueItem(link));
         } else if (userInput.contains("spotify.com")) {
             channel.sendMessage("*spotify is not currently supported*").queue();
         } else {
             link = userInput;
+            guildService.getQueue().add(new QueueItem(link));
         }
         if (link.isBlank()) {
             channel.sendMessage("there was an issue processing your request").queue();
             return;
         }
+        if (!queueWasEmpty) {
+            channel.sendMessage("added to queue").queue();
+            return;
+        }
+        playLink(member.getGuild(), guildService, channel, voiceState, link);
+    }
 
+    public void playLink(Guild guild, GuildService guildService, MessageChannel channel, GuildVoiceState voiceState, String link) {
+        AudioPlayer player = guildService.getAudioPlayer();
+        AudioPlayerManager playerManager = guildService.getPlayerManager();
+        AudioEventListener audioEventListener = guildService.getAudioEventListener();
+
+        guild.getAudioManager().openAudioConnection(voiceState.getChannel());
+        if (playerManager == null) {
+            playerManager = new DefaultAudioPlayerManager();
+            guildService.setPlayerManager(playerManager);
+        }
+        if (player != null) player.destroy();
+        player = playerManager.createPlayer();
+        guildService.setAudioPlayer(player);
+
+        audioEventListener = new AudioEventListener(player, guildService);
+        guildService.setAudioEventListener(audioEventListener);
+        player.addListener(audioEventListener);
+        AudioPlayerSendHandler audioPlayerSendHandler = new AudioPlayerSendHandler(player);
+        guild.getAudioManager().setSendingHandler(audioPlayerSendHandler);
+        AudioSourceManagers.registerRemoteSources(playerManager);
+        AudioLoadHandler audioLoadHandler = new AudioLoadHandler(guildService, channel, audioEventListener,
+                (nextLink) -> playLink(guild, guildService, channel, voiceState, nextLink));
         try {
-            playerManager.loadItem(link, new AudioLoadResultHandler() {
-
-                @Override
-                public void trackLoaded(AudioTrack audioTrack) {
-                    guildService.getAudioPlayer().playTrack(audioTrack);
-                }
-
-                @Override
-                public void playlistLoaded(AudioPlaylist audioPlaylist) {
-
-                }
-
-                @Override
-                public void noMatches() {
-
-                }
-
-                @Override
-                public void loadFailed(FriendlyException e) {
-
-                }
-            }).get();
+            System.out.println("loading...");
+            playerManager.loadItem(link, audioLoadHandler).get();
         } catch (Exception ignored) {
             System.out.println("there was an exception");
         }
     }
+
 }
+
+
+
+
