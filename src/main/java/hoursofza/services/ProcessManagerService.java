@@ -17,7 +17,7 @@ public class ProcessManagerService {
 
 
     public ProcessManagerService(AppConfig appConfig) {
-        prefix = appConfig.isDevMode() ? appConfig.getPrefix().dev() : appConfig.getPrefix().prod();
+        prefix = appConfig.getPrefix();
         this.isActive = true;
         log.info("process startup - active");
         this.servers = new HashMap<>();
