@@ -21,9 +21,9 @@ public class Sheet implements AdminCommandHandler {
         try {
             // Demonstration of updating the sheet database
             this.databaseService.update("Hello world");
-            event.getMessage().getChannel().sendMessage("updated sheet!").queue();
+            event.message().getChannel().sendMessage("updated sheet!").queue();
         } catch (Exception ignored) {
-            event.getMessage().getChannel().sendMessage("there was an error").queue();
+            event.message().getChannel().sendMessage("there was an error").queue();
         }
 
     }

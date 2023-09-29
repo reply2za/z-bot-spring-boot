@@ -24,7 +24,7 @@ public class Update implements AdminCommandHandler {
             while ((line = reader.readLine()) != null) {
                 output.append(line).append("\n");
             }
-            event.getMessage().getChannel().sendMessage("`".concat(output.append("`").toString())).queue();
+            event.message().getChannel().sendMessage("`".concat(output.append("`").toString())).queue();
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

@@ -28,13 +28,13 @@ public class CommandStore {
 
     @Nullable
     public CommandHandler getCommand(@NotNull MessageEventLocal messageEventLocal) {
-        if (this.admins.contains(messageEventLocal.getMessage().getAuthor().getId())) {
-            CommandHandler adminCmd = this.adminCommands.get(messageEventLocal.getStatement());
+        if (this.admins.contains(messageEventLocal.message().getAuthor().getId())) {
+            CommandHandler adminCmd = this.adminCommands.get(messageEventLocal.statement());
             if (adminCmd != null) {
                 return adminCmd;
             }
         }
-        return this.clientCommands.get(messageEventLocal.getStatement());
+        return this.clientCommands.get(messageEventLocal.statement());
     }
     @Nullable
     public ClientCommandHandler getClientCommand(@NotNull String name) {

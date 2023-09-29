@@ -36,7 +36,7 @@ public class HelpTest {
     @BeforeEach
     public void setUp() {
         autoCloseable = MockitoAnnotations.openMocks(this);
-        when(messageEvent.getMessage()).thenReturn(mockMessageSetup.message);
+        when(messageEvent.message()).thenReturn(mockMessageSetup.message);
         mockMessageSetup.setupMocks();
     }
 
@@ -51,7 +51,7 @@ public class HelpTest {
 
         help.execute(messageEvent);
 
-        verify(messageEvent, times(1)).getMessage();
+        verify(messageEvent, times(1)).message();
         verify(mockMessageSetup.message, times(1)).getAuthor();
         verify(mockMessageSetup.user, times(1)).getName();
         verify(mockMessageSetup.message, times(1)).getChannel();

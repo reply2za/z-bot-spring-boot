@@ -20,16 +20,17 @@ public class StartupService {
     private final AppConfig appConfig;
     private final List<EventListener> eventListeners;
 
-    public StartupService(AppConfig appConfig, List<ListenerAdapter> listeners, EventWaiterListenerWrapper eventWaiterListenerWrapper) {
+    public StartupService(AppConfig appConfig, List<ListenerAdapter> listeners,
+                          EventWaiterListenerWrapper eventWaiterListenerWrapper) {
         this.appConfig = appConfig;
         this.eventListeners = new ArrayList<>(listeners);
         this.eventListeners.add(eventWaiterListenerWrapper.getEventWaiter());
     }
 
     @PostConstruct
-    public void init() {
+    private void init() {
         log.info("Initializing Discord bot");
-        JDABuilder.createDefault(this.appConfig.getToken())
+        ProcessManagerService.setBot(JDABuilder.createDefault(this.appConfig.getToken())
                 .addEventListeners(this.eventListeners.toArray())
                 .enableIntents(
                         GatewayIntent.GUILD_MEMBERS,
@@ -37,7 +38,8 @@ public class StartupService {
                         GatewayIntent.MESSAGE_CONTENT,
                         GatewayIntent.GUILD_VOICE_STATES
                 )
-                .build();
+                .build());
         log.info("Mode: " + (this.appConfig.isDevMode() ? "Development" : "Production"));
     }
+
 }

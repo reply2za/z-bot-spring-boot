@@ -26,8 +26,8 @@ public class Pause implements ClientCommandHandler {
 
     @Override
     public void execute(MessageEventLocal event) {
-        event.getMessage().getChannel().sendMessage(
-                pauseCommand(event.getMessage().getGuild(), event.getMessage().getChannel())
+        event.message().getChannel().sendMessage(
+                pauseCommand(event.message().getGuild(), event.message().getChannel())
         ).queue();
     }
 

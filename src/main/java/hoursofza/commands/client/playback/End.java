@@ -16,7 +16,7 @@ public class End implements ClientCommandHandler {
 
     @Override
     public void execute(MessageEventLocal event) {
-        endCommand(event.getMessage().getGuild());
+        endCommand(event.message().getGuild());
     }
 
     @Override

@@ -37,8 +37,8 @@ public class Resume implements ClientCommandHandler {
 
     @Override
     public void execute(MessageEventLocal event) {
-        String response = runResumeCommandAndSendResponse(event.getMessage().getGuild());
-        event.getMessage().getChannel().sendMessage(response).queue();
+        String response = runResumeCommandAndSendResponse(event.message().getGuild());
+        event.message().getChannel().sendMessage(response).queue();
     }
 
     @Override

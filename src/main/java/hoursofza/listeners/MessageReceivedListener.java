@@ -23,19 +23,16 @@ import java.util.List;
 public class MessageReceivedListener extends ListenerAdapter {
 
     private final CommandStore commandStore;
-    private final ProcessManagerService processManager;
     private final DiscordUtils discordUtils;
 
     private final AppConfig appConfig;
 
     public MessageReceivedListener(
             CommandStore commandStore,
-            ProcessManagerService processManagerService,
             DiscordUtils discordUtils,
             AppConfig appConfig
     ) {
         this.commandStore = commandStore;
-        this.processManager = processManagerService;
         this.discordUtils = discordUtils;
         this.appConfig = appConfig;
     }
@@ -45,11 +42,12 @@ public class MessageReceivedListener extends ListenerAdapter {
         if (event.getAuthor().isBot()) return;
         Message message = event.getMessage();
         String content = message.getContentRaw();
-        if (!content.substring(0, processManager.getPrefix().length()).equals(processManager.getPrefix())) return;
+        String botPrefix = ProcessManagerService.getPREFIX();
+        if (!content.startsWith(botPrefix)) return;
         List<String> messageContents = List.of(message.getContentRaw().split("\\s+"));
-        if (messageContents.size() < 1) return;
+        if (messageContents.isEmpty()) return;
         String statement = messageContents.get(0);
-        statement = statement.substring(processManager.getPrefix().length()).toLowerCase();
+        statement = statement.substring(botPrefix.length()).toLowerCase();
         if (statement.isBlank()) return;
         MessageEventLocal messageEvent = new MessageEventLocal(message, statement, new HashMap<>(), messageContents.subList(1, messageContents.size()));
         CommandHandler commandHandler = commandStore.getCommand(messageEvent);
@@ -81,7 +79,7 @@ public class MessageReceivedListener extends ListenerAdapter {
      */
     private boolean isInvalidInstanceAndPermission(CommandHandler commandHandler, String userId) {
         boolean isAdmin = discordUtils.getAdmins().contains(userId);
-        if (!processManager.isActive() && (!isAdmin || !commandHandler.isMultiProcessCommand())) return true;
+        if (!ProcessManagerService.isACTIVE() && (!isAdmin || !commandHandler.isMultiProcessCommand())) return true;
         return appConfig.isDevMode() && !isAdmin;
     }
 }

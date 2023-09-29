@@ -11,7 +11,7 @@ public class Ping implements ClientCommandHandler {
 
     @Override
     public void execute(MessageEventLocal event) {
-        event.getMessage().getChannel().sendMessage("Pong! - java").queue();
+        event.message().getChannel().sendMessage("Pong! - java").queue();
     }
 
     @Override

@@ -43,13 +43,13 @@ public class Play implements ClientCommandHandler {
 
     @Override
     public void execute(MessageEventLocal event) {
-        if (event.getArgs().size() < 1) {
-            event.getMessage().getChannel().sendMessage("*no link provided*").queue();
+        if (event.args().size() < 1) {
+            event.message().getChannel().sendMessage("*no link provided*").queue();
             return;
         }
-        String wordOrLink = String.join(" ", event.getArgs()).trim();
+        String wordOrLink = String.join(" ", event.args()).trim();
         UserProvidedType type = wordOrLink.contains(" ") || !wordOrLink.contains(".") ? UserProvidedType.WORDS : UserProvidedType.LINK;
-        playCommand(event.getMessage().getMember(), event.getMessage().getChannel(), type, wordOrLink);
+        playCommand(event.message().getMember(), event.message().getChannel(), type, wordOrLink);
     }
 
     @Override

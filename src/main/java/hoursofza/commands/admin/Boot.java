@@ -14,27 +14,25 @@ import java.util.List;
 @Component
 public class Boot implements AdminCommandHandler {
 
-    final ProcessManagerService processManagerService;
     final DiscordUtils discordUtils;
     final AppConfig appConfig;
     final String pid;
     private final static Emoji GEAR = Unicode.GEAR.getEmoji();
 
-    Boot(ProcessManagerService processManagerService, DiscordUtils discordUtils, AppConfig appConfig) {
+    Boot(DiscordUtils discordUtils, AppConfig appConfig) {
         this.pid = String.valueOf(ProcessHandle.current().pid());
-        this.processManagerService = processManagerService;
         this.discordUtils = discordUtils;
         this.appConfig = appConfig;
     }
 
     @Override
     public void execute(MessageEventLocal event) {
-        event.getMessage().getChannel().sendMessage(this.getStatus()).queue(message -> {
+        event.message().getChannel().sendMessage(this.getStatus()).queue(message -> {
             message.addReaction(GEAR).queue();
             discordUtils.awaitReaction(message, 60,
                     (messageEvent) -> discordUtils.getAdmins().contains(messageEvent.getUserId()),
                     (messageEvent) -> {
-                        processManagerService.setActive(!processManagerService.isActive());
+                        ProcessManagerService.setActive(!ProcessManagerService.isACTIVE());
                         if (messageEvent.getUser() != null)
                             message.removeReaction(GEAR, messageEvent.getUser()).queue();
                         message.editMessage(this.getStatus()).queue();
@@ -57,7 +55,7 @@ public class Boot implements AdminCommandHandler {
     }
 
     private String getActiveText() {
-        return processManagerService.isActive() ? "**active**" : "inactive";
+        return ProcessManagerService.isACTIVE() ? "**active**" : "inactive";
     }
 
     private String getStatus() {

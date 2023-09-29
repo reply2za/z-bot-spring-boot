@@ -21,7 +21,7 @@ public class Version implements ClientCommandHandler {
     }
     @Override
     public void execute(MessageEventLocal messageEvent) {
-        Message m = messageEvent.getMessage();
+        Message m = messageEvent.message();
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("version")
                 .setDescription(appConfig.getVersion())

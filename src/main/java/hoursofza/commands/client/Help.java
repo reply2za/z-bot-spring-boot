@@ -30,7 +30,7 @@ public class Help implements ClientCommandHandler {
     }
     @Override
     public void execute(MessageEventLocal messageEvent) {
-        Message message = messageEvent.getMessage();
+        Message message = messageEvent.message();
         String mention = getMention(message.getMember(), message.getAuthor());
         message.getChannel().sendMessage(computation(message, mention)).queue();
     }
