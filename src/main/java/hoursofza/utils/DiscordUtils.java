@@ -3,6 +3,7 @@ package hoursofza.utils;
 
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import hoursofza.listeners.EventWaiterListenerWrapper;
+import lombok.Getter;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.events.message.GenericMessageEvent;
@@ -20,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 @Component
@@ -28,6 +28,7 @@ public class DiscordUtils {
     private final EventWaiter waiter;
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
+    @Getter
     private final Set<String> admins;
 
     DiscordUtils(EventWaiterListenerWrapper eventWaiterListenerWrapper, @Value("${owners}") String admins) {
@@ -45,7 +46,7 @@ public class DiscordUtils {
                               int timeoutSeconds,
                               Predicate<MessageReactionAddEvent> isValidReaction,
                               Predicate<MessageReactionAddEvent> action,
-                              Consumer<?> timeoutAction
+                              Runnable timeoutAction
                               ) {
         await(timeoutSeconds,
                 (event) -> event.getMessageId().equals(message.getId()) && isValidReaction.test(event),
@@ -59,9 +60,9 @@ public class DiscordUtils {
 
     public <T> void awaitMessage(Channel channel,
                                  int timeoutSeconds,
-                                 Predicate<GenericMessageEvent> isValidMessage,
+                                 Predicate<MessageReceivedEvent> isValidMessage,
                                  Predicate<MessageReceivedEvent> action,
-                                 Consumer<?> timeoutAction
+                                 Runnable timeoutAction
     ) {
         await(timeoutSeconds,
                 (event) -> event.getChannel().getId().equals(channel.getId()) && isValidMessage.test(event),
@@ -74,7 +75,7 @@ public class DiscordUtils {
     private <T extends GenericMessageEvent> void await(int timeoutSeconds,
                        Predicate<T> isValidEvent,
                        Predicate<T> action,
-                       Consumer<?> timeoutAction,
+                       Runnable timeoutAction,
                        Class<T> awaitClass) {
         // boolean value is false when the timeout is complete.
         AtomicBoolean isActive = new AtomicBoolean(true);
@@ -86,7 +87,7 @@ public class DiscordUtils {
         Runnable onTimeoutCompletion = () -> {
             if (isActive.get()) {
                 isActive.set(false);
-                timeoutAction.accept(null);
+                timeoutAction.run();
             }
         };
         executorService.schedule(
@@ -120,7 +121,4 @@ public class DiscordUtils {
         runnable.run();
     }
 
-    public Set<String> getAdmins() {
-        return this.admins;
-    }
 }

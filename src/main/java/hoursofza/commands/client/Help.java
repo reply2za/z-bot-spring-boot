@@ -73,7 +73,7 @@ public class Help implements ClientCommandHandler {
                         }
                         return true;
                     },
-                    x -> reacts.forEach(emoji -> messageToReactTo.clearReactions(emoji).queue())
+                    () -> reacts.forEach(emoji -> messageToReactTo.clearReactions(emoji).queue())
             );
         }
         return MessageCreateData.fromEmbeds(embedBuilder.build());

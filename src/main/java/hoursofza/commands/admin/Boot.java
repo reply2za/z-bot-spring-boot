@@ -38,7 +38,7 @@ public class Boot implements AdminCommandHandler {
                         message.editMessage(this.getStatus()).queue();
                         return true;
                     },
-                    (x) -> message.clearReactions(GEAR).queue()
+                    () -> message.clearReactions(GEAR).queue()
             );
         });
 
