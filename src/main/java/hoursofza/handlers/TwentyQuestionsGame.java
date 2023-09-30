@@ -33,7 +33,7 @@ public class TwentyQuestionsGame implements Game {
     private boolean gameOver = false;
     private static final int REACT_TIMEOUT = 60 * 60 * 24 * 2;
     AppConfig appConfig;
-    private static final String WIN_TXT = "you got it";
+    private static final String WIN_TXT = "you guessed it";
 
     static {
         VALID_ANSWERS = Stream.of("yes", "no", "sometimes", "rarely", WIN_TXT)
