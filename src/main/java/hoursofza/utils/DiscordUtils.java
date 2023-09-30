@@ -4,9 +4,13 @@ package hoursofza.utils;
 import com.jagrosh.jdautilities.commons.waiter.EventWaiter;
 import hoursofza.listeners.EventWaiterListenerWrapper;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.Channel;
+import net.dv8tion.jda.api.events.message.GenericMessageEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,19 +47,48 @@ public class DiscordUtils {
                               Predicate<MessageReactionAddEvent> action,
                               Consumer<?> timeoutAction
                               ) {
-        // boolean value is true when the reaction timeout is complete.
-        AtomicBoolean isActiveReaction = new AtomicBoolean(true);
+        await(timeoutSeconds,
+                (event) -> event.getMessageId().equals(message.getId()) && isValidReaction.test(event),
+                action,
+                timeoutAction,
+                MessageReactionAddEvent.class
+        );
+    }
+
+
+
+    public <T> void awaitMessage(Channel channel,
+                                 int timeoutSeconds,
+                                 Predicate<GenericMessageEvent> isValidMessage,
+                                 Predicate<MessageReceivedEvent> action,
+                                 Consumer<?> timeoutAction
+    ) {
+        await(timeoutSeconds,
+                (event) -> event.getChannel().getId().equals(channel.getId()) && isValidMessage.test(event),
+                action,
+                timeoutAction,
+                MessageReceivedEvent.class
+        );
+    }
+
+    private <T extends GenericMessageEvent> void await(int timeoutSeconds,
+                       Predicate<T> isValidEvent,
+                       Predicate<T> action,
+                       Consumer<?> timeoutAction,
+                       Class<T> awaitClass) {
+        // boolean value is false when the timeout is complete.
+        AtomicBoolean isActive = new AtomicBoolean(true);
         // purpose of timekeeping is to reduce the waitForEvent timeout
         AtomicLong startTimeMS = new AtomicLong(System.currentTimeMillis());
         AtomicLong elapsedTimeMS = new AtomicLong();
         AtomicInteger timeoutSecondsAtomic = new AtomicInteger(timeoutSeconds);
+        // make the reaction no longer 'active' and perform the timeoutAction.
         Runnable onTimeoutCompletion = () -> {
-            if (isActiveReaction.get()) {
-                isActiveReaction.set(false);
+            if (isActive.get()) {
+                isActive.set(false);
                 timeoutAction.accept(null);
             }
         };
-        // make the reaction no longer 'active' and perform the timeoutAction.
         executorService.schedule(
                 onTimeoutCompletion,
                 timeoutSeconds,
@@ -65,10 +98,10 @@ public class DiscordUtils {
             @Override
             public void run() {
                 waiter.waitForEvent(
-                        MessageReactionAddEvent.class,
-                        event -> event.getMessageId().equals(message.getId()) && isValidReaction.test(event),
+                        awaitClass,
+                        isValidEvent,
                         event -> {
-                            if (isActiveReaction.get()) {
+                            if (isActive.get()) {
                                 boolean continueWaiting = action.test(event);
                                 if (continueWaiting) {
                                     elapsedTimeMS.set(System.currentTimeMillis() - startTimeMS.get());
