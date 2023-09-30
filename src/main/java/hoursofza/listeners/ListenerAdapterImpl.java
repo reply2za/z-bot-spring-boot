@@ -8,33 +8,52 @@ import hoursofza.store.CommandStore;
 import hoursofza.utils.DiscordUtils;
 import hoursofza.utils.MessageEventLocal;
 import lombok.extern.slf4j.Slf4j;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
-@Slf4j
 @Component
-public class MessageReceivedListener extends ListenerAdapter {
-
+@DependsOn("commandService")
+@Slf4j
+public class ListenerAdapterImpl extends ListenerAdapter {
+    private final List<SlashCommandData> slashCommands;
     private final CommandStore commandStore;
     private final DiscordUtils discordUtils;
 
     private final AppConfig appConfig;
 
-    public MessageReceivedListener(
-            CommandStore commandStore,
-            DiscordUtils discordUtils,
-            AppConfig appConfig
-    ) {
+    ListenerAdapterImpl(CommandStore commandStore,
+                        DiscordUtils discordUtils,
+                        AppConfig appConfig) {
         this.commandStore = commandStore;
         this.discordUtils = discordUtils;
         this.appConfig = appConfig;
+        this.slashCommands = commandStore.getClientCommands().stream().map(ClientCommandHandler::getSlashCommand).filter(Objects::nonNull).toList();
+    }
+
+    @Override
+    public void onGuildJoin(@NotNull GuildJoinEvent event) {
+        slashCommands.parallelStream().filter(Objects::nonNull).forEach(
+                slashCommand -> event.getGuild().updateCommands().addCommands(slashCommand).queue()
+        );
+    }
+
+    @Override
+    public void onGuildReady(@NotNull GuildReadyEvent guildReadyEvent) {
+        guildReadyEvent.getGuild().updateCommands().addCommands(slashCommands).queue();
     }
 
     @Override
@@ -82,15 +101,31 @@ public class MessageReceivedListener extends ListenerAdapter {
         if (!ProcessManagerService.isACTIVE() && (!isAdmin || !commandHandler.isMultiProcessCommand())) return true;
         return appConfig.isDevMode() && !isAdmin;
     }
+
+    @Override
+    public void onMessageReactionAdd(MessageReactionAddEvent event) {
+        // only interpret reactions to bot messages
+        if (event.getUser() == null) return;
+        ProcessManagerService.awaitingReactions.get(event.getUser().getId());
+        Member member = event.getMember();
+        if (member != null) {
+            log.info("{} added a reaction", event.getMember().getUser().getName());
+        }
+    }
 }
 
 
-// Listener for message reactions
-//    @Override
-//    public void onMessageReactionAdd(MessageReactionAddEvent event) {
-//        if (event.getUser() == null || event.getUser().isBot()) return;
-//        Member member = event.getMember();
-//        if (member != null) {
-//            log.info("{} added a reaction", event.getMember().getUser().getName());
-//        }
-//    }
+/**
+ *
+ *
+ *
+ * User initiates game (.start game)
+ * asked (which game would you like to start [1-n]
+ * response 1
+ * asked followup game setup questions
+ *
+ *
+ * dms the other party
+ *
+ *
+ */
