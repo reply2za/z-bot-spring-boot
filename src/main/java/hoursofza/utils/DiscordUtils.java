@@ -57,12 +57,17 @@ public class DiscordUtils {
     }
 
 
-
-    public <T> void awaitMessage(Channel channel,
-                                 int timeoutSeconds,
-                                 Predicate<MessageReceivedEvent> isValidMessage,
-                                 Predicate<MessageReceivedEvent> action,
-                                 Runnable timeoutAction
+    /**
+     * Awaits a reaction for a message.
+     * @param isValidMessage A Predicate that is given a MessageReceivedEvent.
+     *                        Returns whether the action should be executed.
+     * @param action A Predicate that performs the action. Returning true will keep the event alive.
+     */
+    public void awaitMessage(Channel channel,
+                             int timeoutSeconds,
+                             Predicate<MessageReceivedEvent> isValidMessage,
+                             Predicate<MessageReceivedEvent> action,
+                             Runnable timeoutAction
     ) {
         await(timeoutSeconds,
                 (event) -> event.getChannel().getId().equals(channel.getId()) && isValidMessage.test(event),
@@ -72,6 +77,12 @@ public class DiscordUtils {
         );
     }
 
+    /**
+     * Awaits a reaction for a message.
+     * @param isValidEvent A Predicate that is given a MessageReactionAddEvent.
+     *                        Returns whether the action should be executed.
+     * @param action A Predicate that performs the action. Returning true will keep the event alive.
+     */
     private <T extends GenericMessageEvent> void await(int timeoutSeconds,
                        Predicate<T> isValidEvent,
                        Predicate<T> action,
@@ -109,7 +120,7 @@ public class DiscordUtils {
                                     timeoutSecondsAtomic.set(timeoutSecondsAtomic.get() - (int)(elapsedTimeMS.get()/1000));
                                     startTimeMS.set(System.currentTimeMillis());
                                     run();
-                                }
+                                } else isActive.set(false);
                             }
                         },
                         timeoutSecondsAtomic.get(),

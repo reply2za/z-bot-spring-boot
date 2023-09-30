@@ -2,7 +2,7 @@ package hoursofza.commands.client;
 
 
 import hoursofza.commands.interfaces.ClientCommandHandler;
-import hoursofza.enums.Unicode;
+import hoursofza.enums.Reactions;
 import hoursofza.utils.DiscordUtils;
 import hoursofza.utils.MessageEventLocal;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -50,13 +50,14 @@ public class Help implements ClientCommandHandler {
     }
 
     private MessageCreateData computation(@Nullable Message messageToReactTo, @Nullable String mention) {
-        if (mention == null) mention = "friend";
+//        if (mention == null) mention = "friend";
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("Hello!")
-                .setDescription("Hi, " + mention + "! I'm a simple Discord bot built with Spring Boot and JDA.")
+//                .setDescription("Hi, " + mention + "! I'm a simple Discord bot built with Spring Boot and JDA.")
+                .setDescription("question: play 20 questions")
                 .setColor(Color.decode("#469963"));
         if (messageToReactTo != null) {
-            List<Emoji> reacts = List.of(Unicode.THUMBS_UP.getEmoji(), Unicode.GEAR.getEmoji());
+            List<Emoji> reacts = List.of(Reactions.THUMBS_UP.getEmoji(), Reactions.GEAR.getEmoji());
             reacts.forEach(e -> messageToReactTo.addReaction(e).queue());
             discordUtils.awaitReaction(
                     messageToReactTo,

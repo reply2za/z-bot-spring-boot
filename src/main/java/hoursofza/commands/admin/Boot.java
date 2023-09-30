@@ -5,7 +5,7 @@ import hoursofza.config.AppConfig;
 import hoursofza.services.ProcessManagerService;
 import hoursofza.utils.DiscordUtils;
 import hoursofza.utils.MessageEventLocal;
-import hoursofza.enums.Unicode;
+import hoursofza.enums.Reactions;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ public class Boot implements AdminCommandHandler {
     final DiscordUtils discordUtils;
     final AppConfig appConfig;
     final String pid;
-    private final static Emoji GEAR = Unicode.GEAR.getEmoji();
+    private final static Emoji GEAR = Reactions.GEAR.getEmoji();
 
     Boot(DiscordUtils discordUtils, AppConfig appConfig) {
         this.pid = String.valueOf(ProcessHandle.current().pid());

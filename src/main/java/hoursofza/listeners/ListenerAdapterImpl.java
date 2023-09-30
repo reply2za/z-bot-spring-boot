@@ -3,6 +3,7 @@ package hoursofza.listeners;
 import hoursofza.commands.interfaces.ClientCommandHandler;
 import hoursofza.commands.interfaces.CommandHandler;
 import hoursofza.config.AppConfig;
+import hoursofza.services.GameService;
 import hoursofza.services.ProcessManagerService;
 import hoursofza.store.CommandStore;
 import hoursofza.utils.DiscordUtils;
@@ -34,14 +35,17 @@ public class ListenerAdapterImpl extends ListenerAdapter {
     private final DiscordUtils discordUtils;
 
     private final AppConfig appConfig;
+    private final GameService gameService;
 
     ListenerAdapterImpl(CommandStore commandStore,
                         DiscordUtils discordUtils,
-                        AppConfig appConfig) {
+                        AppConfig appConfig,
+                        GameService gameService) {
         this.commandStore = commandStore;
         this.discordUtils = discordUtils;
         this.appConfig = appConfig;
         this.slashCommands = commandStore.getClientCommands().stream().map(ClientCommandHandler::getSlashCommand).filter(Objects::nonNull).toList();
+        this.gameService = gameService;
     }
 
     @Override
@@ -59,6 +63,7 @@ public class ListenerAdapterImpl extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
+//        gameService.parseUserResponse(event.getChannel(), event.getAuthor(), event.getMessage());
         Message message = event.getMessage();
         String content = message.getContentRaw();
         String botPrefix = ProcessManagerService.getPREFIX();

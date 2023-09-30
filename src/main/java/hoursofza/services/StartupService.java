@@ -36,7 +36,10 @@ public class StartupService {
                         GatewayIntent.GUILD_MEMBERS,
                         GatewayIntent.DIRECT_MESSAGES,
                         GatewayIntent.MESSAGE_CONTENT,
-                        GatewayIntent.GUILD_VOICE_STATES
+                        GatewayIntent.GUILD_VOICE_STATES,
+                        GatewayIntent.GUILD_MESSAGE_REACTIONS,
+                        GatewayIntent.DIRECT_MESSAGE_REACTIONS,
+                        GatewayIntent.DIRECT_MESSAGE_TYPING
                 )
                 .build());
         log.info("Mode: " + (this.appConfig.isDevMode() ? "Development" : "Production"));
