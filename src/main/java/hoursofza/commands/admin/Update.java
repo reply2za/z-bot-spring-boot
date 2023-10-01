@@ -17,6 +17,7 @@ public class Update implements AdminCommandHandler {
         Process process = null;
         BufferedReader reader = null;
         try {
+            event.message().getChannel().sendMessage("updating...").queue();
             process = Runtime.getRuntime().exec("bash pm2/start.bash");
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
@@ -26,6 +27,7 @@ public class Update implements AdminCommandHandler {
             }
             event.message().getChannel().sendMessage("`".concat(output.append("`").toString())).queue();
         } catch (IOException e) {
+            event.message().getChannel().sendMessage("there was an error updating").queue();
             e.printStackTrace();
         } finally {
             if (reader != null) {
