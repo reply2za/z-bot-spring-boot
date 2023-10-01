@@ -185,7 +185,10 @@ public class TwentyQuestionsGame implements Game {
                             (e) ->
                                     event.getUser() != null && e.getAuthor().getId().equals(responder.getId()),
                             (e) -> !input(e.getChannel(), e.getAuthor(), e.getMessage()),
-                            () -> message.getChannel().sendMessage("no input provided, react when you are ready").queue());
+                            () -> {
+                        message.getChannel().sendMessage("no input provided, react when you are ready").queue();
+                        awaitReaction(message, responder, reaction);
+                            });
                     return false;
                 },
                 () -> {
