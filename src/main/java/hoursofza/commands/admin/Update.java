@@ -17,7 +17,7 @@ public class Update implements AdminCommandHandler {
         Process process = null;
         BufferedReader reader = null;
         try {
-            process = Runtime.getRuntime().exec("git status");
+            process = Runtime.getRuntime().exec("bash pm2/start.bash");
             reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
             StringBuilder output = new StringBuilder();
