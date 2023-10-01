@@ -30,12 +30,14 @@ public class YoutubeSearchService {
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
 
     private final YouTube youtubeService;
+
     YoutubeSearchService() throws GeneralSecurityException, IOException {
         youtubeService = getService();
     }
 
     /**
      * Searched YouTube for the provided term and returns the first video result.
+     *
      * @param searchTerm The term to search for.
      * @return A video link.
      */
@@ -48,7 +50,7 @@ public class YoutubeSearchService {
                     .execute();
             Optional<SearchResult> searchResultOptional = response.getItems().parallelStream().filter(item -> item.getId().getVideoId() != null).findFirst();
             return searchResultOptional.map(searchResult -> searchResult.getId().getVideoId()).orElse(null);
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return "";

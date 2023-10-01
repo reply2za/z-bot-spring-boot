@@ -53,7 +53,7 @@ public class TwentyQuestionsGame implements Game {
         this.discordUtils = discordUtils;
         this.guesser = guesser;
         this.answerer = answerer;
-        if (numQuestions!= null && numQuestions > 0) this.maxQuestions = numQuestions;
+        if (numQuestions != null && numQuestions > 0) this.maxQuestions = numQuestions;
         else maxQuestions = DEFAULT_MAX_QUESTIONS;
     }
 

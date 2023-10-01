@@ -15,6 +15,7 @@ public class AudioLoadHandler implements AudioLoadResultHandler {
     private final MessageChannel channel;
     private final Consumer<String> playCommand;
     private final AudioEventListener audioListener;
+
     public AudioLoadHandler(GuildService guildService, MessageChannel channel, AudioEventListener audioListener,
                             Consumer<String> playCommand) {
         this.guildService = guildService;

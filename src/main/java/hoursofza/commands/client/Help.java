@@ -25,9 +25,11 @@ import java.util.List;
 public class Help implements ClientCommandHandler {
 
     private final DiscordUtils discordUtils;
+
     Help(DiscordUtils discordUtils) {
-        this.discordUtils =  discordUtils;
+        this.discordUtils = discordUtils;
     }
+
     @Override
     public void execute(MessageEventLocal messageEvent) {
         Message message = messageEvent.message();

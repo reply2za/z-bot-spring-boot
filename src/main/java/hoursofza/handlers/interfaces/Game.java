@@ -14,6 +14,7 @@ public interface Game {
 
     /**
      * Returns whether the input was valid.
+     *
      * @param channel
      * @param user
      * @param message
@@ -32,6 +33,7 @@ public interface Game {
 
     /**
      * Request that a game be ended.
+     *
      * @param initiator The user making the request.
      */
     void requestEndGame(User initiator);

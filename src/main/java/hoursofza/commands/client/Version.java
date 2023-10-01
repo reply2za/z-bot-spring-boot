@@ -19,6 +19,7 @@ public class Version implements ClientCommandHandler {
     Version(AppConfig appConfig) {
         this.appConfig = appConfig;
     }
+
     @Override
     public void execute(MessageEventLocal messageEvent) {
         Message m = messageEvent.message();

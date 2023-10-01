@@ -87,7 +87,7 @@ public class Play implements ClientCommandHandler {
             channel.sendMessage("*must be in a voice channel*").queue();
             return;
         }
-        GuildService guildService = processManagerService.getServer(member.getGuild().getId());
+        GuildService guildService = ProcessManagerService.getServer(member.getGuild().getId());
         AudioPlayer player = guildService.getAudioPlayer();
         if (!member.getGuild().getAudioManager().isConnected()) {
             guildService.getQueue().clear();

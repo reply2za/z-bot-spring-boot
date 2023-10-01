@@ -59,7 +59,7 @@ public class Resume implements ClientCommandHandler {
     }
 
     public boolean resumeCommand(Guild guild) {
-        GuildService guildService = processManagerService.getServer(guild.getId());
+        GuildService guildService = ProcessManagerService.getServer(guild.getId());
         AudioPlayer player = guildService.getAudioPlayer();
         if (player != null && player.isPaused()) {
             player.setPaused(false);

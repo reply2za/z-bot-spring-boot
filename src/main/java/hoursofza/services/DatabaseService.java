@@ -41,6 +41,7 @@ public class DatabaseService {
 
     /**
      * Saves data to the default cell (B2)
+     *
      * @param data The data to save.
      */
     public void update(String data) throws IOException {

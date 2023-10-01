@@ -36,6 +36,7 @@ public class CommandStore {
         }
         return this.clientCommands.get(messageEventLocal.statement());
     }
+
     @Nullable
     public ClientCommandHandler getClientCommand(@NotNull String name) {
         return this.clientCommands.get(name);
@@ -47,6 +48,7 @@ public class CommandStore {
 
     /**
      * Sets the client commands. Can only be called once.
+     *
      * @param clientCommands The map of aliases to client commands.
      * @return
      */
@@ -60,6 +62,7 @@ public class CommandStore {
 
     /**
      * Sets the admin commands. Can only be called once.
+     *
      * @param adminCommands The map of aliases to admin commands.
      * @return
      */
@@ -73,6 +76,7 @@ public class CommandStore {
 
     /**
      * Sets the admins. Can only be called once.
+     *
      * @param admins
      * @return
      */

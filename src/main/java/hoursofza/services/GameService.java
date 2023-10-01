@@ -20,7 +20,7 @@ public class GameService {
 
     public void startGame(Game game, @Nullable MessageChannel channel) {
         game.getPlayers().forEach(player -> {
-            if (allGames.containsKey(player.getId())){
+            if (allGames.containsKey(player.getId())) {
                 allGames.get(player.getId()).add(game);
             } else {
                 List<Game> playerGames = new ArrayList<>();
@@ -49,5 +49,5 @@ public class GameService {
         });
         return false;
     }
-    
+
 }

@@ -59,7 +59,7 @@ public class Pause implements ClientCommandHandler {
      * @return The response to be sent to the user.
      */
     private String pauseCommand(Guild guild, MessageChannel channel) {
-        GuildService guildService = processManagerService.getServer(guild.getId());
+        GuildService guildService = ProcessManagerService.getServer(guild.getId());
         AudioPlayer audioPlayer = guildService.getAudioPlayer();
         if (audioPlayer == null || audioPlayer.isPaused()) {
             return "*nothing is playing right now*";

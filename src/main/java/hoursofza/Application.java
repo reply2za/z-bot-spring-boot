@@ -10,7 +10,7 @@ import org.springframework.context.annotation.ImportResource;
 @ImportResource("classpath:application-context.xml")
 @EnableConfigurationProperties(AppConfig.class)
 public class Application {
-	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 }

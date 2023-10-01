@@ -6,10 +6,10 @@ public enum ReactionEnum {
     THUMBS_UP("\uD83D\uDC4D"),
     GEAR("⚙"),
     CHECK_MARK("✅"),
-    ENVELOPE("✉️")
-    ;
+    ENVELOPE("✉️");
 
     private final String unicode;
+
     ReactionEnum(String unicode) {
         this.unicode = unicode;
     }
