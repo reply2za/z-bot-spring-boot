@@ -17,6 +17,7 @@ import org.mockito.MockitoAnnotations;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,8 +26,7 @@ public class HelpTest {
 
     @Mock
     private DiscordUtils discordUtils;
-    @Mock
-    private MessageEventLocal messageEvent;
+    private MessageEventLocal messageEventLocal;
     @InjectMocks
     private Help help;
     @InjectMocks
@@ -36,7 +36,8 @@ public class HelpTest {
     @BeforeEach
     public void setUp() {
         autoCloseable = MockitoAnnotations.openMocks(this);
-        when(messageEvent.message()).thenReturn(mockMessageSetup.message);
+        messageEventLocal = mock(MessageEventLocal.class);
+        when(messageEventLocal.message()).thenReturn(mockMessageSetup.message);
         mockMessageSetup.setupMocks();
     }
 
@@ -49,9 +50,10 @@ public class HelpTest {
     public void testExecute() {
         ArgumentCaptor<MessageCreateData> messageCaptor = ArgumentCaptor.forClass(MessageCreateData.class);
 
-        help.execute(messageEvent);
 
-        verify(messageEvent, times(1)).message();
+        help.execute(messageEventLocal);
+
+        verify(messageEventLocal, times(1)).message();
         verify(mockMessageSetup.message, times(1)).getAuthor();
         verify(mockMessageSetup.user, times(1)).getName();
         verify(mockMessageSetup.message, times(1)).getChannel();
@@ -62,6 +64,6 @@ public class HelpTest {
         verify(discordUtils, times(1)).awaitReaction(any(Message.class), anyInt(), any(), any(), any());
 
         MessageCreateData capturedMessage = messageCaptor.getValue();
-        Assertions.assertTrue(capturedMessage.getEmbeds().get(0).getDescription().contains("I'm a simple"));
+        Assertions.assertTrue(capturedMessage.getEmbeds().get(0).getDescription().contains("question"));
     }
 }
