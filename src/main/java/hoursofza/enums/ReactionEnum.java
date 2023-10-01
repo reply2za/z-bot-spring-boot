@@ -2,12 +2,14 @@ package hoursofza.enums;
 
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 
-public enum Reactions {
+public enum ReactionEnum {
     THUMBS_UP("\uD83D\uDC4D"),
-    GEAR("⚙");
+    GEAR("⚙"),
+    CHECK_MARK("✅")
+    ;
 
     private final String unicode;
-    Reactions(String unicode) {
+    ReactionEnum(String unicode) {
         this.unicode = unicode;
     }
 

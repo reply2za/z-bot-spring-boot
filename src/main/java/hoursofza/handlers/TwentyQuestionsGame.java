@@ -2,7 +2,7 @@ package hoursofza.handlers;
 
 import hoursofza.config.AppConfig;
 import hoursofza.enums.GameType;
-import hoursofza.enums.Reactions;
+import hoursofza.enums.ReactionEnum;
 import hoursofza.handlers.interfaces.Game;
 import hoursofza.utils.DiscordUtils;
 import lombok.Getter;
@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,13 +28,15 @@ public class TwentyQuestionsGame implements Game {
     private final DiscordUtils discordUtils;
     boolean guesserTurn = true;
     List<QuestionAnswer> questionAndAnswers = new ArrayList<>();
-    private final int maxQuestions = 5;
+    private final int maxQuestions = 1;
     private boolean guesserHasWon = false;
     private static final List<String> VALID_ANSWERS;
     private boolean gameOver = false;
     private static final int REACT_TIMEOUT = 60 * 60 * 24 * 2;
     AppConfig appConfig;
     private static final String WIN_TXT = "you guessed it";
+    private static Message lastMessageGuesser;
+    private static Message lastMessageAnswerer;
 
     static {
         VALID_ANSWERS = Stream.of("yes", "no", "sometimes", "rarely", WIN_TXT)
@@ -46,6 +49,33 @@ public class TwentyQuestionsGame implements Game {
         this.discordUtils = discordUtils;
         this.guesser = guesser;
         this.answerer = answerer;
+    }
+
+    @Override
+    public void initialize(@Nullable MessageChannel channel) {
+        answerer.openPrivateChannel().onSuccess(privateChannel -> {
+            if (channel != null && !channel.getId().equals(privateChannel.getId())) {
+                channel.sendMessage("*check your DMs*").queue();
+            }
+            privateChannel.sendMessage("what is the word?").onErrorMap(map -> {
+                log.error(map.getMessage());
+                return null;
+            }).onSuccess((message) -> {
+                discordUtils.awaitMessage(privateChannel, 90,
+                        (event) -> event.getMessage().getAuthor().getId().equals(answerer.getId()),
+                        (event) -> {
+                            wordToGuess = event.getMessage().getContentRaw();
+                            event.getMessage().addReaction(ReactionEnum.CHECK_MARK.getEmoji()).queue();
+                            event.getMessage().getChannel().sendMessage("waiting on other player...").queue();
+                            updateGuesser();
+                            return false;
+                        },
+                        () -> {
+                            privateChannel.sendMessage("*no input provided, cancelled game*").queue();
+                            gameOver = true;
+                        });
+            }).queue();
+        }).queue();
     }
 
 
@@ -64,11 +94,14 @@ public class TwentyQuestionsGame implements Game {
             }
             if (text.equalsIgnoreCase(WIN_TXT)) {
                 guesserHasWon = true;
+                gameOver = true;
+            } else if (questionAndAnswers.size() == maxQuestions) {
+                gameOver = true;
             }
             if (!questionAndAnswers.isEmpty()) questionAndAnswers.get(questionAndAnswers.size() - 1).setAnswer(text);
             updateGuesser();
         }
-        return false;
+        return true;
     }
 
     @Override
@@ -81,30 +114,7 @@ public class TwentyQuestionsGame implements Game {
         return List.of(guesser, answerer);
     }
 
-    @Override
-    public void initialize(@Nullable MessageChannel channel) {
-        answerer.openPrivateChannel().onSuccess(privateChannel -> {
-            if (channel != null && !channel.getId().equals(privateChannel.getId())) {
-                channel.sendMessage("*check your DMs*").queue();
-            }
-            privateChannel.sendMessage("what is the word?").onErrorMap(map -> {
-                log.error(map.getMessage());
-                return null;
-            }).onSuccess((message) -> {
-                discordUtils.awaitMessage(privateChannel, 90,
-                        (event) -> event.getMessage().getAuthor().getId().equals(answerer.getId()),
-                        (event) -> {
-                            wordToGuess = event.getMessage().getContentRaw();
-                            updateGuesser();
-                            return false;
-                        },
-                        () -> {
-                            privateChannel.sendMessage("*no input provided, cancelled game*").queue();
-                            gameOver = true;
-                        });
-            }).queue();
-        }).queue();
-    }
+
 
     @Override
     public boolean isGameOver() {
@@ -116,53 +126,67 @@ public class TwentyQuestionsGame implements Game {
         int i = 0;
         questionAndAnswers.forEach(x -> {
             sb.append(i).append(". ").append(x.question);
-            if (!x.answer.isEmpty()) sb.append(" >").append(x.answer);
+            if (!x.answer.isEmpty()) sb.append(" > ").append(x.answer);
             sb.append("\n");
         });
         return sb.toString();
     }
 
     private void updateGuesser() {
-        if (guesserHasWon) {
+        if (gameOver) {
             guesser.openPrivateChannel().onSuccess(privateChannel -> {
-                privateChannel.sendMessage("you've won, the word is: " + wordToGuess + "\n" +
-                        "tries: " + questionAndAnswers.size() + "/" + maxQuestions).queue();
+                String endGameTxt;
+                if (guesserHasWon) {
+                    endGameTxt = "you've won, the word is: " + wordToGuess + "\n" +
+                            "tries: " + questionAndAnswers.size() + "/" + maxQuestions;
+                } else {
+                    endGameTxt = buildHistory() + "\nGame Over. The word was: **" + wordToGuess + "**";
+                }
+                privateChannel.sendMessage(endGameTxt).queue();
             }).queue();
+            return;
         }
+        String description = "";
+        description += "**React to ask a question or guess the word**\n" + buildHistory();
         guesserTurn = true;
-        guesser.openPrivateChannel().onSuccess(privateChannel -> {
-            String description = "";
-            if (questionAndAnswers.size() < maxQuestions && !guesserHasWon) {
-                description += "**React to ask a question or guess the word**\n" + buildHistory();
-            } else if (guesserHasWon) {
-                description += buildHistory() + "\nyou've won! word is: " + wordToGuess;
-            } else {
-                description += buildHistory() + "\ngame over. word is: " + wordToGuess;
-            }
+        updatePlayer(guesser, description, (message) -> {
+            if (lastMessageGuesser != null) lastMessageGuesser.delete().queue();
+            lastMessageGuesser = message;
+        });
+    }
+
+    private void updateAnswerer() {
+        guesserTurn = false;
+        String description = "**React to answer the question**\n" +
+                "*Questions*\n" + buildHistory() + getValidAnswers();
+        updatePlayer(answerer, description, (message) -> {
+            if (lastMessageAnswerer != null) lastMessageAnswerer.delete().queue();
+            lastMessageAnswerer = message;
+        });
+    }
+
+    private void updatePlayer(User user, String description, Consumer<Message> messageConsumer) {
+        user.openPrivateChannel().onSuccess(privateChannel -> {
             privateChannel.sendMessage(description).onSuccess(message -> {
-                message.addReaction(Reactions.THUMBS_UP.getEmoji()).onSuccess((reaction) -> {
-                    awaitReaction(message, guesser);
+                messageConsumer.accept(message);
+                message.addReaction(ReactionEnum.THUMBS_UP.getEmoji()).onSuccess((reaction) -> {
+                    awaitReaction(message, user, ReactionEnum.THUMBS_UP);
                 }).queue();
             }).queue();
         }).queue();
     }
 
-    private void awaitReaction(Message message, User responder) {
+    private void awaitReaction(Message message, User responder, ReactionEnum reaction) {
         discordUtils.awaitReaction(message, REACT_TIMEOUT, (event) ->
-                        event.getUser() != null && !event.getUser().isBot() && event.getReaction().getEmoji().equals(Reactions.THUMBS_UP.getEmoji())
+                        event.getUser() != null && !event.getUser().isBot() && event.getReaction().getEmoji().equals(reaction.getEmoji())
                                 && event.getUser().getId().equals(responder.getId()),
                 (event) -> {
                     event.getChannel().sendMessage("input: ").queue();
-                    discordUtils.awaitMessage(message.getChannel(), 90, (e) ->
-                                    event.getUser() != null && e.getAuthor().getId().equals(event.getUser().getId()),
-                            (e) -> {
-                                input(e.getChannel(), e.getAuthor(), e.getMessage());
-                                return false;
-                            }, () -> {
-                                message.getChannel().sendMessage(
-                                        "no input provided, react when you are ready"
-                                ).queue();
-                            });
+                    discordUtils.awaitMessage(message.getChannel(), 90,
+                            (e) ->
+                                    event.getUser() != null && e.getAuthor().getId().equals(responder.getId()),
+                            (e) -> !input(e.getChannel(), e.getAuthor(), e.getMessage()),
+                            () -> message.getChannel().sendMessage("no input provided, react when you are ready").queue());
                     return false;
                 },
                 () -> {
@@ -171,19 +195,6 @@ public class TwentyQuestionsGame implements Game {
                     ).queue();
                 }
         );
-    }
-
-    private void updateAnswerer() {
-        guesserTurn = false;
-        String description = "**React to answer the question**\n" +
-                "*Questions*\n" + buildHistory() + getValidAnswers();
-        answerer.openPrivateChannel().onSuccess(privateChannel -> {
-            privateChannel.sendMessage(description).onSuccess(message -> {
-                message.addReaction(Reactions.THUMBS_UP.getEmoji()).onSuccess((reaction) -> {
-                    awaitReaction(message, answerer);
-                }).queue();
-            }).queue();
-        }).queue();
     }
 
     private static String getValidAnswers() {

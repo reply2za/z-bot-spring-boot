@@ -1,9 +1,6 @@
 package hoursofza.services;
 
 import hoursofza.handlers.interfaces.Game;
-import lombok.Getter;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import org.springframework.stereotype.Component;
 
@@ -12,34 +9,33 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class GameService {
-    @Getter
     // userId to games
-    private final Map<String, List<Game>> activeGames = new HashMap<>();
+    private final Map<String, List<Game>> allGames = new HashMap<>();
 
 
     public void startGame(Game game, @Nullable MessageChannel channel) {
         game.getPlayers().forEach(player -> {
-            if (activeGames.containsKey(player.getId())){
-                activeGames.get(player.getId()).add(game);
+            if (allGames.containsKey(player.getId())){
+                allGames.get(player.getId()).add(game);
             } else {
                 List<Game> playerGames = new ArrayList<>();
                 playerGames.add(game);
-                activeGames.put(player.getId(), playerGames);
+                allGames.put(player.getId(), playerGames);
             }
         });
         game.initialize(channel);
     }
 
-    public void parseUserResponse(MessageChannel channel, User author, Message message) {
-        // todo add game over logic
-        List<Game> games = activeGames.get(author.getId());
-        if (games != null && !games.isEmpty()) {
-            games.get(0).input(channel, author, message);
-        }
+    public List<Game> getActiveGames(String userId) {
+        List<Game> userGames = allGames.get(userId);
+        if (userGames == null) return List.of();
+        List<Game> activeGames = userGames.stream().filter(game -> !game.isGameOver()).collect(Collectors.toList());
+        allGames.put(userId, activeGames);
+        return activeGames;
     }
-
     
 }

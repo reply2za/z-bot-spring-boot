@@ -26,7 +26,7 @@ public class Questions implements ClientCommandHandler {
 
     @Override
     public void execute(MessageEventLocal event) {
-        if (gameService.getActiveGames().containsKey(event.message().getAuthor().getId())) {
+        if (!gameService.getActiveGames(event.message().getAuthor().getId()).isEmpty()) {
             event.message().getChannel().sendMessage("there can only be one active game").queue();
         } else {
             event.message().getChannel().sendMessage("name the username you would like to play with").onSuccess((message) -> {
@@ -72,6 +72,6 @@ public class Questions implements ClientCommandHandler {
 
     @Override
     public List<String> getNames() {
-        return List.of("question");
+        return List.of("question", "questions");
     }
 }

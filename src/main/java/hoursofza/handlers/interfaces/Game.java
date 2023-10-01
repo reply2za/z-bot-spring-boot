@@ -10,8 +10,10 @@ import java.util.List;
 
 public interface Game {
 
+    void initialize(@Nullable MessageChannel channel);
+
     /**
-     * Returns whether the game is over.
+     * Returns whether the input was valid.
      * @param channel
      * @param user
      * @param text
@@ -23,7 +25,7 @@ public interface Game {
 
     List<User> getPlayers();
 
-    void initialize(@Nullable MessageChannel channel);
+
 
     boolean isGameOver();
 

@@ -2,7 +2,7 @@ package hoursofza.commands.client;
 
 
 import hoursofza.commands.interfaces.ClientCommandHandler;
-import hoursofza.enums.Reactions;
+import hoursofza.enums.ReactionEnum;
 import hoursofza.utils.DiscordUtils;
 import hoursofza.utils.MessageEventLocal;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -57,7 +57,7 @@ public class Help implements ClientCommandHandler {
                 .setDescription("question: play 20 questions")
                 .setColor(Color.decode("#469963"));
         if (messageToReactTo != null) {
-            List<Emoji> reacts = List.of(Reactions.THUMBS_UP.getEmoji(), Reactions.GEAR.getEmoji());
+            List<Emoji> reacts = List.of(ReactionEnum.THUMBS_UP.getEmoji(), ReactionEnum.GEAR.getEmoji());
             reacts.forEach(e -> messageToReactTo.addReaction(e).queue());
             discordUtils.awaitReaction(
                     messageToReactTo,
