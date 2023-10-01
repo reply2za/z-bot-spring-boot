@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.requests.RestAction;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -68,7 +69,7 @@ public class TwentyQuestionsGame implements Game {
                             wordToGuess = event.getMessage().getContentRaw();
                             event.getMessage().addReaction(ReactionEnum.CHECK_MARK.getEmoji()).queue();
                             event.getMessage().getChannel().sendMessage("waiting on other player...").queue();
-                            updateGuesser();
+                            updateGuesser(null);
                             return false;
                         },
                         () -> {
@@ -85,7 +86,7 @@ public class TwentyQuestionsGame implements Game {
         String text = message.getContentRaw();
         if (guesserTurn) {
             questionAndAnswers.add(new QuestionAnswer().setQuestion(text));
-            updateAnswerer();
+            updateAnswerer(messageSuccessRunnable(message));
         } else {
             if (!VALID_ANSWERS.contains(text.trim().toLowerCase())) {
                 channel.sendMessage("invalid answer").queue();
@@ -98,7 +99,7 @@ public class TwentyQuestionsGame implements Game {
                 gameOver = true;
             }
             if (!questionAndAnswers.isEmpty()) questionAndAnswers.get(questionAndAnswers.size() - 1).setAnswer(text);
-            updateGuesser();
+            updateGuesser(messageSuccessRunnable(message));
         }
         return true;
     }
@@ -112,7 +113,6 @@ public class TwentyQuestionsGame implements Game {
     public List<User> getPlayers() {
         return List.of(guesser, answerer);
     }
-
 
 
     @Override
@@ -131,7 +131,7 @@ public class TwentyQuestionsGame implements Game {
         return sb.toString();
     }
 
-    private void updateGuesser() {
+    private void updateGuesser(@Nullable Runnable successCallback) {
         if (gameOver) {
             guesser.openPrivateChannel().onSuccess(privateChannel -> {
                 String endGameTxt;
@@ -149,33 +149,48 @@ public class TwentyQuestionsGame implements Game {
         description += "**React to ask a question or guess the word**\n" + buildHistory();
         guesserTurn = true;
         updatePlayer(guesser, description, (message) -> {
+            if (successCallback != null) successCallback.run();
             if (lastMessageGuesser != null) lastMessageGuesser.delete().queue();
             lastMessageGuesser = message;
         });
     }
 
-    private void updateAnswerer() {
+    private void updateAnswerer(@Nullable Runnable successCallback) {
         guesserTurn = false;
         String description = "**React to answer the question**\n" +
                 "*Questions*\n" + buildHistory() + getValidAnswers();
         updatePlayer(answerer, description, (message) -> {
+            if (successCallback != null) successCallback.run();
             if (lastMessageAnswerer != null) lastMessageAnswerer.delete().queue();
             lastMessageAnswerer = message;
         });
     }
 
     private void updatePlayer(User user, String description, Consumer<Message> messageConsumer) {
-        user.openPrivateChannel().onSuccess(privateChannel -> {
-            privateChannel.sendMessage(description).onSuccess(message -> {
+        actionWrapper(user.openPrivateChannel(), privateChannel -> {
+            actionWrapper(privateChannel.sendMessage(description), message -> {
                 messageConsumer.accept(message);
-                message.addReaction(ReactionEnum.THUMBS_UP.getEmoji()).onSuccess((reaction) -> {
-                    awaitReaction(message, user, ReactionEnum.THUMBS_UP);
-                }).queue();
-            }).queue();
+                actionWrapper(message.addReaction(ReactionEnum.ENVELOPE.getEmoji()),
+                        (reaction) -> awaitReactionAndInput(message, user, ReactionEnum.ENVELOPE));
+            });
+        });
+    }
+
+    private <T> void actionWrapper(RestAction<T> cacheRestAction, Consumer<T> onSuccess) {
+        cacheRestAction.onSuccess(onSuccess).onErrorMap(throwable -> {
+            log.error(throwable.getMessage());
+            return null;
         }).queue();
     }
 
-    private void awaitReaction(Message message, User responder, ReactionEnum reaction) {
+    /**
+     * Awaits a reaction for an official game message that requires an input response.
+     *
+     * @param message
+     * @param responder
+     * @param reaction
+     */
+    private void awaitReactionAndInput(Message message, User responder, ReactionEnum reaction) {
         discordUtils.awaitReaction(message, REACT_TIMEOUT, (event) ->
                         event.getUser() != null && !event.getUser().isBot() && event.getReaction().getEmoji().equals(reaction.getEmoji())
                                 && event.getUser().getId().equals(responder.getId()),
@@ -186,8 +201,8 @@ public class TwentyQuestionsGame implements Game {
                                     event.getUser() != null && e.getAuthor().getId().equals(responder.getId()),
                             (e) -> !input(e.getChannel(), e.getAuthor(), e.getMessage()),
                             () -> {
-                        message.getChannel().sendMessage("no input provided, react when you are ready").queue();
-                        awaitReaction(message, responder, reaction);
+                                message.getChannel().sendMessage("no input provided, react when you are ready").queue();
+                                awaitReactionAndInput(message, responder, reaction);
                             });
                     return false;
                 },
@@ -203,6 +218,20 @@ public class TwentyQuestionsGame implements Game {
         return "you can say: " + VALID_ANSWERS.stream().map(answer -> "**" + answer + "**").collect(Collectors.joining(", "));
     }
 
+    private Runnable messageSuccessRunnable(Message message) {
+        return () -> {
+            message.addReaction(ReactionEnum.THUMBS_UP.getEmoji()).queue();
+            discordUtils.awaitReaction(message, 120,
+                    (e) -> e.getUser() != null && message.getAuthor().getId().equals(e.getUser().getId()),
+                    (e) -> {
+                        message.getChannel().sendMessage("your message has been sent to the other player").queue();
+                        return false;
+                    },
+                    () -> {
+                    }
+            );
+        };
+    }
 
     private static class QuestionAnswer {
         private String question = "";

@@ -5,7 +5,8 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 public enum ReactionEnum {
     THUMBS_UP("\uD83D\uDC4D"),
     GEAR("⚙"),
-    CHECK_MARK("✅")
+    CHECK_MARK("✅"),
+    ENVELOPE("✉️")
     ;
 
     private final String unicode;
