@@ -29,7 +29,8 @@ public class TwentyQuestionsGame implements Game {
     private final DiscordUtils discordUtils;
     boolean guesserTurn = true;
     List<QuestionAnswer> questionAndAnswers = new ArrayList<>();
-    private final int maxQuestions = 20;
+    private static final int DEFAULT_MAX_QUESTIONS = 20;
+    private final int maxQuestions;
     private boolean guesserHasWon = false;
     private static final List<String> VALID_ANSWERS;
     private boolean gameOver = false;
@@ -46,11 +47,14 @@ public class TwentyQuestionsGame implements Game {
     }
 
 
-    public TwentyQuestionsGame(AppConfig appConfig, DiscordUtils discordUtils, User answerer, User guesser) {
+    public TwentyQuestionsGame(AppConfig appConfig, DiscordUtils discordUtils, User answerer, User guesser,
+                               Integer numQuestions) {
         this.appConfig = appConfig;
         this.discordUtils = discordUtils;
         this.guesser = guesser;
         this.answerer = answerer;
+        if (numQuestions!= null && numQuestions > 0) this.maxQuestions = numQuestions;
+        else maxQuestions = DEFAULT_MAX_QUESTIONS;
     }
 
     @Override
@@ -118,6 +122,20 @@ public class TwentyQuestionsGame implements Game {
     @Override
     public boolean isGameOver() {
         return gameOver;
+    }
+
+    @Override
+    public void requestEndGame(User initiator) {
+        gameOver = true;
+        updatePlayerGameHasBeenEnded(initiator, guesser);
+        updatePlayerGameHasBeenEnded(initiator, answerer);
+    }
+
+    private void updatePlayerGameHasBeenEnded(User ender, User playerToNotify) {
+        String desc = "game has ended";
+        if (!ender.getId().equals(playerToNotify.getId())) desc += ", as requested by " + ender.getName();
+        String finalDesc = desc;
+        playerToNotify.openPrivateChannel().onSuccess(privateChannel -> privateChannel.sendMessage(finalDesc).queue()).queue();
     }
 
     private String buildHistory() {

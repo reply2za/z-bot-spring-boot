@@ -1,6 +1,7 @@
 package hoursofza.services;
 
 import hoursofza.handlers.interfaces.Game;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import org.springframework.stereotype.Component;
 
@@ -36,6 +37,17 @@ public class GameService {
         List<Game> activeGames = userGames.stream().filter(game -> !game.isGameOver()).collect(Collectors.toList());
         allGames.put(userId, activeGames);
         return activeGames;
+    }
+
+    public boolean requestEndGame(User initiator, String name) {
+        List<Game> games = allGames.get(initiator.getId());
+        if (games == null) return false;
+        games.forEach(game -> {
+            if (game.getClass().getSimpleName().equalsIgnoreCase(name)) {
+                game.requestEndGame(initiator);
+            }
+        });
+        return false;
     }
     
 }

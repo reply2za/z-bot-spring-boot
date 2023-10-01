@@ -16,7 +16,7 @@ public interface Game {
      * Returns whether the input was valid.
      * @param channel
      * @param user
-     * @param text
+     * @param message
      * @return
      */
     boolean input(MessageChannel channel, User user, Message message);
@@ -25,8 +25,15 @@ public interface Game {
 
     List<User> getPlayers();
 
-
-
+    /**
+     * @return Whether the game has ended
+     */
     boolean isGameOver();
+
+    /**
+     * Request that a game be ended.
+     * @param initiator The user making the request.
+     */
+    void requestEndGame(User initiator);
 
 }

@@ -54,7 +54,8 @@ public class Help implements ClientCommandHandler {
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("Hello!")
 //                .setDescription("Hi, " + mention + "! I'm a simple Discord bot built with Spring Boot and JDA.")
-                .setDescription("question: play 20 questions")
+                .setDescription("question (num): play 20-questions or specify a number\n" +
+                        "question [end]: quit all 20-question games")
                 .setColor(Color.decode("#469963"));
         if (messageToReactTo != null) {
             List<Emoji> reacts = List.of(ReactionEnum.THUMBS_UP.getEmoji(), ReactionEnum.GEAR.getEmoji());

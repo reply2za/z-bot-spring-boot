@@ -14,7 +14,7 @@ public class GameFactories {
     @Autowired
     AppConfig appConfig;
 
-    public TwentyQuestionsGame newTwentyQuestionsGame(User answerer, User guesser) {
-        return new TwentyQuestionsGame(appConfig, discordUtils, answerer, guesser);
+    public TwentyQuestionsGame newTwentyQuestionsGame(User answerer, User guesser, Integer numQuestions) {
+        return new TwentyQuestionsGame(appConfig, discordUtils, answerer, guesser, numQuestions);
     }
 }
