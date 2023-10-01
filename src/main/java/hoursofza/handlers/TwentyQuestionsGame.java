@@ -28,15 +28,16 @@ public class TwentyQuestionsGame implements Game {
     private final DiscordUtils discordUtils;
     boolean guesserTurn = true;
     List<QuestionAnswer> questionAndAnswers = new ArrayList<>();
-    private final int maxQuestions = 1;
+    private final int maxQuestions = 20;
     private boolean guesserHasWon = false;
     private static final List<String> VALID_ANSWERS;
     private boolean gameOver = false;
     private static final int REACT_TIMEOUT = 60 * 60 * 24 * 2;
     AppConfig appConfig;
     private static final String WIN_TXT = "you guessed it";
-    private static Message lastMessageGuesser;
-    private static Message lastMessageAnswerer;
+    private Message lastMessageGuesser;
+    private Message lastMessageAnswerer;
+    private static final int INIT_TIMEOUT = 120;
 
     static {
         VALID_ANSWERS = Stream.of("yes", "no", "sometimes", "rarely", WIN_TXT)
@@ -61,7 +62,7 @@ public class TwentyQuestionsGame implements Game {
                 log.error(map.getMessage());
                 return null;
             }).onSuccess((message) -> {
-                discordUtils.awaitMessage(privateChannel, 90,
+                discordUtils.awaitMessage(privateChannel, INIT_TIMEOUT,
                         (event) -> event.getMessage().getAuthor().getId().equals(answerer.getId()),
                         (event) -> {
                             wordToGuess = event.getMessage().getContentRaw();
@@ -180,7 +181,7 @@ public class TwentyQuestionsGame implements Game {
                                 && event.getUser().getId().equals(responder.getId()),
                 (event) -> {
                     event.getChannel().sendMessage("input: ").queue();
-                    discordUtils.awaitMessage(message.getChannel(), 90,
+                    discordUtils.awaitMessage(message.getChannel(), INIT_TIMEOUT,
                             (e) ->
                                     event.getUser() != null && e.getAuthor().getId().equals(responder.getId()),
                             (e) -> !input(e.getChannel(), e.getAuthor(), e.getMessage()),
