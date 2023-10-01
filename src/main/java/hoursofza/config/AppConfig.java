@@ -15,6 +15,9 @@ public class AppConfig {
     public AppConfig(String token, boolean devMode, String prefix, String version) {
         this.token = token;
         this.devMode = devMode;
+        if (prefix == null) {
+            throw new IllegalStateException("prefix cannot be null");
+        }
         this.prefix = prefix;
         this.version = version;
     }

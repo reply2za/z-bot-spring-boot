@@ -83,11 +83,9 @@ public class TwentyQuestionsGame implements Game {
     public boolean input(MessageChannel channel, User user, Message message) {
         String text = message.getContentRaw();
         if (guesserTurn) {
-            log.info("guesser said: " + text);
             questionAndAnswers.add(new QuestionAnswer().setQuestion(text));
             updateAnswerer();
         } else {
-            log.info("answerer said: " + text);
             if (!VALID_ANSWERS.contains(text.trim().toLowerCase())) {
                 channel.sendMessage("invalid answer").queue();
                 return false;

@@ -3,19 +3,16 @@ package hoursofza.listeners;
 import hoursofza.commands.interfaces.ClientCommandHandler;
 import hoursofza.commands.interfaces.CommandHandler;
 import hoursofza.config.AppConfig;
-import hoursofza.services.GameService;
 import hoursofza.services.ProcessManagerService;
 import hoursofza.store.CommandStore;
 import hoursofza.utils.DiscordUtils;
 import hoursofza.utils.MessageEventLocal;
 import lombok.extern.slf4j.Slf4j;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.jetbrains.annotations.NotNull;
@@ -35,17 +32,14 @@ public class ListenerAdapterImpl extends ListenerAdapter {
     private final DiscordUtils discordUtils;
 
     private final AppConfig appConfig;
-    private final GameService gameService;
 
     ListenerAdapterImpl(CommandStore commandStore,
                         DiscordUtils discordUtils,
-                        AppConfig appConfig,
-                        GameService gameService) {
+                        AppConfig appConfig) {
         this.commandStore = commandStore;
         this.discordUtils = discordUtils;
         this.appConfig = appConfig;
         this.slashCommands = commandStore.getClientCommands().stream().map(ClientCommandHandler::getSlashCommand).filter(Objects::nonNull).toList();
-        this.gameService = gameService;
     }
 
     @Override
@@ -106,31 +100,5 @@ public class ListenerAdapterImpl extends ListenerAdapter {
         if (!ProcessManagerService.isACTIVE() && (!isAdmin || !commandHandler.isMultiProcessCommand())) return true;
         return appConfig.isDevMode() && !isAdmin;
     }
-
-    @Override
-    public void onMessageReactionAdd(MessageReactionAddEvent event) {
-        // only interpret reactions to bot messages
-        if (event.getUser() == null) return;
-        ProcessManagerService.awaitingReactions.get(event.getUser().getId());
-        Member member = event.getMember();
-        if (member != null) {
-            log.info("{} added a reaction", event.getMember().getUser().getName());
-        }
-    }
 }
 
-
-/**
- *
- *
- *
- * User initiates game (.start game)
- * asked (which game would you like to start [1-n]
- * response 1
- * asked followup game setup questions
- *
- *
- * dms the other party
- *
- *
- */

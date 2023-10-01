@@ -5,7 +5,6 @@ import hoursofza.config.AppConfig;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Message;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -21,7 +20,6 @@ public class ProcessManagerService {
     private static final Map<String, GuildService> SERVERS = new HashMap<>();
     @Getter
     private static JDA BOT;
-    public static final HashMap<String, Map<String, Message>> awaitingReactions = new HashMap<>();
 
 
     public ProcessManagerService(AppConfig appConfig) {
