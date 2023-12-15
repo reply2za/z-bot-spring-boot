@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>hoursofza</groupId>
 	<artifactId>zbot</artifactId>
-	<version>1.2.1</version>
+	<version>1.2.2</version>
 	<name>zbot</name>
 	<description>A personal discord application.</description>
 	<properties>
