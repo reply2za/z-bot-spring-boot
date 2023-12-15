@@ -3,12 +3,14 @@ package hoursofza.listeners;
 import hoursofza.commands.interfaces.ClientCommandHandler;
 import hoursofza.commands.interfaces.CommandHandler;
 import hoursofza.config.AppConfig;
+import hoursofza.enums.ReactionEnum;
 import hoursofza.services.ProcessManagerService;
 import hoursofza.store.CommandStore;
 import hoursofza.utils.DiscordUtils;
 import hoursofza.utils.MessageEventLocal;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -32,6 +34,7 @@ public class ListenerAdapterImpl extends ListenerAdapter {
     private final DiscordUtils discordUtils;
 
     private final AppConfig appConfig;
+    private Message lastTurnMessage;
 
     ListenerAdapterImpl(CommandStore commandStore,
                         DiscordUtils discordUtils,
@@ -57,6 +60,10 @@ public class ListenerAdapterImpl extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.getAuthor().isBot()) return;
+        // civ channel & webhook bot
+        if (event.getChannel().getId().equals("1183626115378589726") && event.getAuthor().getId().equals("1183626204801151068")) {
+            notifyPlayer(event);
+        }
 //        gameService.parseUserResponse(event.getChannel(), event.getAuthor(), event.getMessage());
         Message message = event.getMessage();
         String content = message.getContentRaw();
@@ -74,6 +81,34 @@ public class ListenerAdapterImpl extends ListenerAdapter {
             log.info("executing {}", commandHandler.getClass().getName());
             commandHandler.execute(messageEvent);
         }
+    }
+
+    private void notifyPlayer(MessageReceivedEvent event) {
+        String message = event.getMessage().getContentRaw();
+        String username = message.split(", it's your turn")[0];
+        String userId = null;
+        switch (username.toLowerCase()) {
+            case "machoherbivore9":
+                userId = "378675087274016771";
+            break;
+            case "brownsycamore":
+                userId = "268554823283113985";
+                break;
+            case "reply2za":
+                userId = "443150640823271436";
+                break;
+            default:
+                System.out.println("invalid username: " + username);
+                break;
+        }
+        if (userId == null) return;
+        if (lastTurnMessage != null) lastTurnMessage.addReaction(ReactionEnum.CHECK_MARK.getEmoji()).queue();
+        event.getGuild().getMember(UserSnowflake.fromId(userId));
+        event.getAuthor().openPrivateChannel().onSuccess(privateChannel -> {
+            privateChannel.sendMessage("it's your turn in civ 6").onSuccess(m -> {
+                lastTurnMessage = m;
+            }).queue();
+        }).queue();
     }
 
     @Override
