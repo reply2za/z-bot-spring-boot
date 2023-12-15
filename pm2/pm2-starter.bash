@@ -1,1 +1,1 @@
-pm2 start pm2/pm2.config.js -- --version 1.2.1
+pm2 start pm2/pm2.config.js -- --version 1.2.2
