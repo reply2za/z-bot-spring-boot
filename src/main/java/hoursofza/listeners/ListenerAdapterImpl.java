@@ -3,14 +3,12 @@ package hoursofza.listeners;
 import hoursofza.commands.interfaces.ClientCommandHandler;
 import hoursofza.commands.interfaces.CommandHandler;
 import hoursofza.config.AppConfig;
-import hoursofza.enums.ReactionEnum;
 import hoursofza.services.ProcessManagerService;
 import hoursofza.store.CommandStore;
 import hoursofza.utils.DiscordUtils;
 import hoursofza.utils.MessageEventLocal;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.UserSnowflake;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -34,7 +32,6 @@ public class ListenerAdapterImpl extends ListenerAdapter {
     private final DiscordUtils discordUtils;
 
     private final AppConfig appConfig;
-    private Message lastTurnMessage;
 
     ListenerAdapterImpl(CommandStore commandStore,
                         DiscordUtils discordUtils,
@@ -85,7 +82,7 @@ public class ListenerAdapterImpl extends ListenerAdapter {
 
     private void notifyPlayer(MessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
-        String username = message.split(", it's your turn")[0];
+        String username = message.split(", it's your turn")[0].trim();
         String userId = null;
         switch (username.toLowerCase()) {
             case "machoherbivore9":
@@ -98,17 +95,10 @@ public class ListenerAdapterImpl extends ListenerAdapter {
                 userId = "443150640823271436";
                 break;
             default:
-                System.out.println("invalid username: " + username);
+                userId = "unknown user";
                 break;
         }
-        if (userId == null) return;
-        if (lastTurnMessage != null) lastTurnMessage.addReaction(ReactionEnum.CHECK_MARK.getEmoji()).queue();
-        event.getGuild().getMember(UserSnowflake.fromId(userId));
-        event.getAuthor().openPrivateChannel().onSuccess(privateChannel -> {
-            privateChannel.sendMessage("it's your turn in civ 6").onSuccess(m -> {
-                lastTurnMessage = m;
-            }).queue();
-        }).queue();
+        event.getMessage().getChannel().sendMessage("<@" + userId + "> it's your turn in civ 6").queue();
     }
 
     @Override
