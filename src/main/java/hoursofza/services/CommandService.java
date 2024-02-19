@@ -36,10 +36,12 @@ public class CommandService {
         String shadowedCommands = adminCommands.keySet().parallelStream()
                 .filter(clientCommands::containsKey)
                 .collect(Collectors.joining(", "));
-        if (shadowedCommands.length() > 0) {
+        if (!shadowedCommands.isEmpty()) {
             log.warn("Admin commands will shadow client commands: " + shadowedCommands);
         }
         commandStore.setClientCommands(clientCommands).setAdminCommands(adminCommands).setAdmins(adminsSet);
+        clientCommandClasses.forEach(CommandHandler::startup);
+        adminCommandClasses.forEach(CommandHandler::startup);
     }
 
     private <T extends CommandHandler> void loadSpecificCommands(Collection<T> commandClasses, Map<String, T> commands) {
@@ -47,16 +49,16 @@ public class CommandService {
         if (unnamedCommand.isPresent()) {
             throw new RuntimeException("All commands must have \"getNames()\" implemented, (check " + unnamedCommand.get().getClass().getName() + ")");
         }
-        commandClasses.parallelStream().forEach(commandHandler ->
-                commandHandler.getNames().parallelStream().map(String::toLowerCase).forEach(alias -> {
-                    if (commands.get(alias) == null) {
-                        commands.put(alias, commandHandler);
-                    } else {
-                        throw new RuntimeException("Command aliases must be unique. Duplicate value: '" +
-                                alias + "'. Exists in classes '" + commandHandler.getClass().getName()
-                                + "' and '" + commands.get(alias).getClass().getName() + "'");
-                    }
-                })
-        );
+        commandClasses.parallelStream().forEach(commandHandler -> {
+            commandHandler.getNames().parallelStream().map(String::toLowerCase).forEach(alias -> {
+                if (commands.get(alias) == null) {
+                    commands.put(alias, commandHandler);
+                } else {
+                    throw new RuntimeException("Command aliases must be unique. Duplicate value: '" +
+                            alias + "'. Exists in classes '" + commandHandler.getClass().getName()
+                            + "' and '" + commands.get(alias).getClass().getName() + "'");
+                }
+            });
+        });
     }
 }

@@ -4,6 +4,7 @@ import hoursofza.commands.interfaces.AdminCommandHandler;
 import hoursofza.commands.interfaces.ClientCommandHandler;
 import hoursofza.commands.interfaces.CommandHandler;
 import hoursofza.utils.MessageEventLocal;
+import hoursofza.utils.NoMessageEventLocal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
@@ -35,6 +36,27 @@ public class CommandStore {
             }
         }
         return this.clientCommands.get(messageEventLocal.statement());
+    }
+
+    public boolean execute(@NotNull MessageEventLocal messageEventLocal) {
+        CommandHandler commandHandler = getCommand(messageEventLocal);
+        if (commandHandler == null) {
+            return false;
+        } else {
+            commandHandler.execute(messageEventLocal);
+            return true;
+        }
+    }
+
+    @Nullable
+    public CommandHandler getCommand(@NotNull NoMessageEventLocal messageEventLocal) {
+        if (messageEventLocal.isAdmin()) {
+            CommandHandler adminCmd = this.adminCommands.get(messageEventLocal.getStatement());
+            if (adminCmd != null) {
+                return adminCmd;
+            }
+        }
+        return this.clientCommands.get(messageEventLocal.getStatement());
     }
 
     @Nullable
