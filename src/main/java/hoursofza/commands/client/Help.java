@@ -34,13 +34,13 @@ public class Help implements ClientCommandHandler {
     public void execute(MessageEventLocal messageEvent) {
         Message message = messageEvent.message();
         String mention = getMention(message.getMember(), message.getAuthor());
-        message.getChannel().sendMessage(computation(message, mention)).queue();
+        message.getChannel().sendMessage(computation(message)).queue();
     }
 
     @Override
     public void executeSlashCommand(@NotNull SlashCommandInteractionEvent slashCommandEvent) {
         String mention = getMention(slashCommandEvent.getMember(), slashCommandEvent.getUser());
-        slashCommandEvent.reply(computation(null, mention)).queue();
+        slashCommandEvent.reply(computation(null)).queue();
     }
 
     private String getMention(Member member, User author) {
@@ -51,7 +51,7 @@ public class Help implements ClientCommandHandler {
         }
     }
 
-    private MessageCreateData computation(@Nullable Message messageToReactTo, @Nullable String mention) {
+    private MessageCreateData computation(@Nullable Message messageToReactTo) {
 //        if (mention == null) mention = "friend";
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("Hello!")

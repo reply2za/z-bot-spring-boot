@@ -42,7 +42,7 @@ public class StartupService {
                         GatewayIntent.DIRECT_MESSAGE_TYPING
                 )
                 .build());
-        log.info("Mode: " + (this.appConfig.isDevMode() ? "Development" : "Production"));
+        log.info("Mode: {}", this.appConfig.isDevMode() ? "Development" : "Production");
     }
 
 }

@@ -83,21 +83,12 @@ public class ListenerAdapterImpl extends ListenerAdapter {
     private void notifyPlayer(MessageReceivedEvent event) {
         String message = event.getMessage().getContentRaw();
         String username = message.split(", it's your turn")[0].trim();
-        String userId = null;
-        switch (username.toLowerCase()) {
-            case "machoherbivore9":
-                userId = "378675087274016771";
-            break;
-            case "brownsycamore":
-                userId = "268554823283113985";
-                break;
-            case "reply2za":
-                userId = "443150640823271436";
-                break;
-            default:
-                userId = "unknown user";
-                break;
-        }
+        String userId = switch (username.toLowerCase()) {
+            case "machoherbivore9" -> "378675087274016771";
+            case "brownsycamore" -> "268554823283113985";
+            case "reply2za" -> "443150640823271436";
+            default -> "unknown user";
+        };
         event.getMessage().getChannel().sendMessage("<@" + userId + "> it's your turn in civ 6").queue();
     }
 

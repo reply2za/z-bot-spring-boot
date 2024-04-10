@@ -102,7 +102,7 @@ public class TwentyQuestionsGame implements Game {
             } else if (questionAndAnswers.size() == maxQuestions) {
                 gameOver = true;
             }
-            if (!questionAndAnswers.isEmpty()) questionAndAnswers.get(questionAndAnswers.size() - 1).setAnswer(text);
+            if (!questionAndAnswers.isEmpty()) questionAndAnswers.getLast().setAnswer(text);
             updateGuesser(messageSuccessRunnable(message));
         }
         return true;

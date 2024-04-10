@@ -34,12 +34,7 @@ public class ProcessManagerService {
     }
 
     public static GuildService getServer(String id) {
-        GuildService guildService = SERVERS.get(id);
-        if (guildService == null) {
-            guildService = new GuildService(id);
-            SERVERS.put(id, guildService);
-        }
-        return guildService;
+        return SERVERS.computeIfAbsent(id, GuildService::new);
     }
 
     public static void setBot(JDA bot) {
