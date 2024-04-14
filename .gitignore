@@ -30,7 +30,9 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+.vscode/*
+!.vscode/settings.json.default
+!.vscode/launch.json.default
 
 google-sheets-service-key.json
 *.env
